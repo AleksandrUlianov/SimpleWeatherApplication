@@ -1,0 +1,16 @@
+<resources name="default_db_template_ver_1">
+    <string name="template">
+        drop table if exists config;
+        create table config(key text not null unique, value text);
+        insert into config(key, value) values ('dbVersion',1);
+        drop table if exists settings;
+        create table settings(key text not null unique, value text);
+        insert into settings(key, value) values ('lastLocation', null);
+        insert into settings(key, value) values ('degreesType', 'CELSIUS');
+        insert into settings(key, value) values ('unitsType', 'METRIC');
+        insert into settings(key, value) values ('period', 'now');
+        drop table if exists PreviouslyBrowsedLocations;
+        create table PreviouslyBrowsedLocations(locationID text);
+    </string>
+
+</resources>
