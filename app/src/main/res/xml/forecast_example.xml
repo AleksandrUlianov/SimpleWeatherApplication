@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<weather_data>
+    <sun rise="2015-06-30T10:08:46" set="2015-07-01T01:06:20"/>
+    <forecast>
+        <time from="2015-06-30T09:00:00" to="2015-06-30T12:00:00">
+            <symbol number="500" name="light rain" var="10n"/>
+            <precipitation value="5%" unit="3h" type="rain"/>
+            <windDirection deg="253.5" code="WSW" name="West-southwest"/>
+            <windSpeed mps="4.9" name="Gentle Breeze"/>
+            <temperature unit="celsius" value="16.89" min="16.89" max="17.375"/>
+            <pressure unit="hPa" value="989.51"/>
+            <humidity value="96" unit="%"/>
+            <clouds value="broken clouds" all="64" unit="%"/>
+        </time>
+        <time from="2015-06-30T12:00:00" to="2015-06-30T15:00:00">
+            <symbol number="500" name="light rain" var="10d"/>
+            <precipitation value="99%" unit="3h" type="rain"/>
+            <windDirection deg="248.001" code="WSW" name="West-southwest"/>
+            <windSpeed mps="4.86" name="Gentle Breeze"/>
+            <temperature unit="celsius" value="17.23" min="17.23" max="17.614"/>
+            <pressure unit="hPa" value="991.29"/>
+            <humidity value="97" unit="%"/>
+            <clouds value="scattered clouds" all="44" unit="%"/>
+        </time>
+
+    </forecast>
+</weather_data>

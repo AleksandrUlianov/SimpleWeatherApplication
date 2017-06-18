@@ -21,6 +21,7 @@ import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetC
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionManager;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.WeatherEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
+import edu.poleaxe.simpleweatherapplication.weatherapi.XMLParcer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -164,17 +165,23 @@ public class WeatherCheckActivity extends AppCompatActivity {
         parameterValue      = dbManager.getSettingValue("period");
         forecastPeriod      = parameterValue == null ? forecastPeriod : parameterValue;
 
-        for (int i = 1; i < 15; i++){
-            String smthToAdd = String.valueOf(i);
-            forecastListToDisplay.add(new ForecastInstance(smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd));
-        }
+//        for (int i = 1; i < 15; i++){
+//            String smthToAdd = String.valueOf(i);
+//            forecastListToDisplay.add(new ForecastInstance(smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd));
+//        }
 
-        weatherEntryAdapter.notifyDataSetChanged();
+
 
         AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
+
+        forecastListToDisplay.clear();
+        forecastListToDisplay.addAll(UpdateWeather());
+
+        weatherEntryAdapter.notifyDataSetChanged();
     }
 
-    private void UpdateWeather(){
+    private ArrayList<ForecastInstance> UpdateWeather(){
+        return new XMLParcer(this).RetrieveForecastEntries();
 
 
     }

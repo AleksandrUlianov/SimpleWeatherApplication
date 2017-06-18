@@ -39,23 +39,17 @@
                     android:id="@+id/rgForecastPeriod">
 
                 <RadioButton
-                        android:text="1 day"
+                        android:text="now"
                         android:textSize="6pt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/rbPeriodDays1" android:layout_weight="1"
                         android:tag="PeriodDays1"/>
                 <RadioButton
-                        android:text="3 days"
+                        android:text="5 days"
                         android:textSize="6pt"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/rbPeriodDays3" android:layout_weight="1"
+                        android:layout_height="wrap_content" android:id="@+id/rbPeriodDays5" android:layout_weight="1"
                         android:tag="PeriodDays3"/>
-                <RadioButton
-                        android:text="6 days"
-                        android:textSize="6pt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/rbPeriodDays6" android:layout_weight="4"
-                        android:tag="PeriodDays6"/>
             </RadioGroup>
         </android.support.design.widget.CollapsingToolbarLayout>
 
@@ -66,8 +60,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_margin="@dimen/fab_margin"
-            app:layout_anchor="@id/app_bar"
-            app:layout_anchorGravity="bottom|end"
+            android:layout_marginTop="400dp"
+
 
             app:srcCompat="@android:drawable/ic_menu_rotate"
     />
