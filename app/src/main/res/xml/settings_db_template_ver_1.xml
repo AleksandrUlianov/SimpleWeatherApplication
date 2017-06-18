@@ -8,7 +8,7 @@
         insert into settings(key, value) values ('lastLocation', null);
         insert into settings(key, value) values ('degreesType', 'CELSIUS');
         insert into settings(key, value) values ('unitsType', 'METRIC');
-        insert into settings(key, value) values ('period', 'now');
+        insert into settings(key, value) values ('period', 'PeriodDays1');
         drop table if exists PreviouslyBrowsedLocations;
         create table PreviouslyBrowsedLocations(locationID text);
     </string>

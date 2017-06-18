@@ -31,20 +31,54 @@
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
-        </android.support.design.widget.CollapsingToolbarLayout>
-    </android.support.design.widget.AppBarLayout>
+            <RadioGroup
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="150dp"
+                    android:id="@+id/rgForecastPeriod">
 
-    <include layout="@layout/content_weather_check"/>
+                <RadioButton
+                        android:text="1 day"
+                        android:textSize="6pt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/rbPeriodDays1" android:layout_weight="1"
+                        android:tag="PeriodDays1"/>
+                <RadioButton
+                        android:text="3 days"
+                        android:textSize="6pt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/rbPeriodDays3" android:layout_weight="1"
+                        android:tag="PeriodDays3"/>
+                <RadioButton
+                        android:text="6 days"
+                        android:textSize="6pt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/rbPeriodDays6" android:layout_weight="4"
+                        android:tag="PeriodDays6"/>
+            </RadioGroup>
+        </android.support.design.widget.CollapsingToolbarLayout>
+
+    </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:layout_margin="@dimen/fab_margin"
             app:layout_anchor="@id/app_bar"
             app:layout_anchorGravity="bottom|end"
 
             app:srcCompat="@android:drawable/ic_menu_rotate"
+    />
+
+    <ListView
+            android:id="@+id/lvForecastList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="180dp"
+            app:layout_anchor="@id/app_bar"
+            app:layout_anchorGravity="bottom|end"
     />
 
 </android.support.design.widget.CoordinatorLayout>

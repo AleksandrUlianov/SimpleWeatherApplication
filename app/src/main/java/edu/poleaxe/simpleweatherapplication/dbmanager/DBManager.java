@@ -117,12 +117,9 @@ public class DBManager {
         listToReturn.add("insert into settings(key, value) values ('lastLocation', null);");
         listToReturn.add("insert into settings(key, value) values ('degreesType', 'CELSIUS');");
         listToReturn.add("insert into settings(key, value) values ('unitsType', 'METRIC');");
-        listToReturn.add("insert into settings(key, value) values ('period', 'now');");
+        listToReturn.add("insert into settings(key, value) values ('period', 'PeriodDays1');");
         listToReturn.add("drop table if exists PreviouslyBrowsedLocations;");
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
-        listToReturn.add("insert into PreviouslyBrowsedLocations(locationID) values ('Arkadak');");
-        listToReturn.add("insert into PreviouslyBrowsedLocations(locationID) values ('Zasratov');");
-        listToReturn.add("insert into PreviouslyBrowsedLocations(locationID) values ('Praha');");
         return listToReturn;
     }
 

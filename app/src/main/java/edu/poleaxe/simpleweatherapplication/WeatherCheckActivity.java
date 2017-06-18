@@ -1,12 +1,17 @@
 package edu.poleaxe.simpleweatherapplication;
 
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ListView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
 import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
@@ -14,6 +19,12 @@ import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogMa
 import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogsTypesEnum;
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionException;
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionManager;
+import edu.poleaxe.simpleweatherapplication.visualcomponents.WeatherEntryAdapter;
+import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * main Activity yof an app. contains:
@@ -28,9 +39,12 @@ public class WeatherCheckActivity extends AppCompatActivity {
     DialogManager dialogManager = new DialogManager();
     DBManager dbManager = new DBManager();
 
+    ArrayList<ForecastInstance> forecastListToDisplay = new ArrayList<>();
+    WeatherEntryAdapter weatherEntryAdapter;
+
     private static TemperatureDegrees   temperatureDegrees  = TemperatureDegrees.CELSIUS;
     private static UnitMeasurements     unitMeasurements    = UnitMeasurements.METRIC;
-    private static String               forecastPeriod      = "now";
+    private static String               forecastPeriod      = "PeriodDays1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +62,37 @@ public class WeatherCheckActivity extends AppCompatActivity {
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
             }
+        }
+        );
+
+        weatherEntryAdapter = new WeatherEntryAdapter(this, forecastListToDisplay);
+        ListView forecastListView = (ListView) findViewById(R.id.lvForecastList);
+        forecastListView.setAdapter(weatherEntryAdapter);
+
+        RadioGroup rg = (RadioGroup) findViewById(R.id.rgForecastPeriod);
+        rg.check(R.id.rbPeriodDays1);
+        rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                RadioButton rb = (RadioButton) group.findViewById(checkedId);
+                if (rb.isChecked()){
+                    forecastPeriod = rb.getTag().toString();
+                    ProcessCheckedRB();
+                }
+            }
         });
+
     }
+
+    private void ProcessCheckedRB() {
+
+        Map settingsToChange = new HashMap<String, String>();
+        settingsToChange.put("forecastPeriod",forecastPeriod);
+        dbManager.updateAllSettings(settingsToChange);
+
+
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -121,11 +164,18 @@ public class WeatherCheckActivity extends AppCompatActivity {
         parameterValue      = dbManager.getSettingValue("period");
         forecastPeriod      = parameterValue == null ? forecastPeriod : parameterValue;
 
-        for (String cityName : dbManager.getSearchHistory()
-             ) {
-
-            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, cityName, this);
-
+        for (int i = 1; i < 15; i++){
+            String smthToAdd = String.valueOf(i);
+            forecastListToDisplay.add(new ForecastInstance(smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd));
         }
+
+        weatherEntryAdapter.notifyDataSetChanged();
+
+        AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
+    }
+
+    private void UpdateWeather(){
+
+
     }
 }
