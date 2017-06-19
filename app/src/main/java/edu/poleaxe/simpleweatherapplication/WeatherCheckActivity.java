@@ -1,8 +1,6 @@
 package edu.poleaxe.simpleweatherapplication;
 
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -12,6 +10,7 @@ import android.view.View;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
 import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
@@ -21,7 +20,7 @@ import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetC
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionManager;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.WeatherEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
-import edu.poleaxe.simpleweatherapplication.weatherapi.XMLParcer;
+import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastProcessor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,15 +36,19 @@ import java.util.Map;
  */
 public class WeatherCheckActivity extends AppCompatActivity {
 
-    DialogManager dialogManager = new DialogManager();
-    DBManager dbManager = new DBManager();
+    private DialogManager dialogManager = new DialogManager();
+    private DBManager dbManager = new DBManager();
+    private ForecastProcessor forecastProcessor;
 
-    ArrayList<ForecastInstance> forecastListToDisplay = new ArrayList<>();
-    WeatherEntryAdapter weatherEntryAdapter;
+    private ArrayList<ForecastInstance> forecastListToDisplay = new ArrayList<>();
+    private WeatherEntryAdapter weatherEntryAdapter;
+
 
     private static TemperatureDegrees   temperatureDegrees  = TemperatureDegrees.CELSIUS;
     private static UnitMeasurements     unitMeasurements    = UnitMeasurements.METRIC;
-    private static String               forecastPeriod      = "PeriodDays1";
+    private static ForecastPeriods      forecastPeriod      = ForecastPeriods.NOW;
+
+    boolean openedFirstTime = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +61,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO move logic of app out of here
-                SetUpApplicationConditions();
+                UpdateWeather();
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
             }
@@ -77,18 +79,28 @@ public class WeatherCheckActivity extends AppCompatActivity {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 RadioButton rb = (RadioButton) group.findViewById(checkedId);
                 if (rb.isChecked()){
-                    forecastPeriod = rb.getTag().toString();
+                    forecastPeriod = ForecastPeriods.valueOf(rb.getTag().toString());
                     ProcessCheckedRB();
+                    UpdateWeather();
                 }
             }
         });
 
     }
 
+    @Override
+    protected void onStart(){
+        super.onStart();
+        if (openedFirstTime) {
+            SetUpApplicationConditions();
+            openedFirstTime = false;
+        }
+    }
+
     private void ProcessCheckedRB() {
 
         Map settingsToChange = new HashMap<String, String>();
-        settingsToChange.put("forecastPeriod",forecastPeriod);
+        settingsToChange.put("forecastPeriod",forecastPeriod.name());
         dbManager.updateAllSettings(settingsToChange);
 
 
@@ -140,6 +152,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
     void SetUpApplicationConditions(){
 
         //Check availability of settings Db and apply settings if it is possible. Use default if not.
+        forecastProcessor = new ForecastProcessor(this);
         boolean settingsDBAvailable;
             try {
                 settingsDBAvailable = dbManager.PrepareAvailableSettingsDB(this);
@@ -163,7 +176,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
         parameterValue      = dbManager.getSettingValue("unitsType");
         unitMeasurements    = parameterValue == null ? unitMeasurements : UnitMeasurements.valueOf(parameterValue);
         parameterValue      = dbManager.getSettingValue("period");
-        forecastPeriod      = parameterValue == null ? forecastPeriod : parameterValue;
+        forecastPeriod      = parameterValue == null ? forecastPeriod : ForecastPeriods.valueOf(parameterValue);
 
 //        for (int i = 1; i < 15; i++){
 //            String smthToAdd = String.valueOf(i);
@@ -171,18 +184,15 @@ public class WeatherCheckActivity extends AppCompatActivity {
 //        }
 
 
-
-        AppBarLayout appBarLayout = (AppBarLayout) findViewById(R.id.app_bar);
-
-        forecastListToDisplay.clear();
-        forecastListToDisplay.addAll(UpdateWeather());
-
-        weatherEntryAdapter.notifyDataSetChanged();
     }
 
-    private ArrayList<ForecastInstance> UpdateWeather(){
-        return new XMLParcer(this).RetrieveForecastEntries();
-
-
+    private void UpdateWeather(){
+        ArrayList<ForecastInstance> tmpForecastList;
+        tmpForecastList = forecastProcessor.RetrieveWeather(forecastPeriod);
+        if (tmpForecastList != null) {
+            forecastListToDisplay.clear();
+            forecastListToDisplay.addAll(tmpForecastList);
+            weatherEntryAdapter.notifyDataSetChanged();
+        }
     }
 }

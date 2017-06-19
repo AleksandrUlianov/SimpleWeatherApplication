@@ -43,13 +43,13 @@
                         android:textSize="6pt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/rbPeriodDays1" android:layout_weight="1"
-                        android:tag="PeriodDays1"/>
+                        android:tag="NOW"/>
                 <RadioButton
                         android:text="5 days"
                         android:textSize="6pt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/rbPeriodDays5" android:layout_weight="1"
-                        android:tag="PeriodDays3"/>
+                        android:tag="DAYS5"/>
             </RadioGroup>
         </android.support.design.widget.CollapsingToolbarLayout>
 

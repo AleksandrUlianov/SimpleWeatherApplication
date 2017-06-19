@@ -13,7 +13,7 @@
             <clouds value="broken clouds" all="64" unit="%"/>
         </time>
         <time from="2015-06-30T12:00:00" to="2015-06-30T15:00:00">
-            <symbol number="500" name="light rain" var="10d"/>
+            <symbol number="500" name="heavy rain" var="10d"/>
             <precipitation value="99%" unit="3h" type="rain"/>
             <windDirection deg="248.001" code="WSW" name="West-southwest"/>
             <windSpeed mps="4.86" name="Gentle Breeze"/>
