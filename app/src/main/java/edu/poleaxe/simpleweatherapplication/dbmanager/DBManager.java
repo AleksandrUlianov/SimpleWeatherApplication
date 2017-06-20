@@ -240,4 +240,20 @@ public class DBManager {
 
         return searchHistoryList;
     }
+
+
+    public void UpdateCityListDB(ArrayList<String> citiesToAdd){
+
+        for (String lineToExecute : citiesToAdd
+                ) {
+            String[] parsedLine = lineToExecute.split("\t");
+
+            String queryToExecute = "insert into CityList(locationID, locationname, lat, lon, countrycode) " +
+                    "values (\"" + parsedLine[0] + "\",\"" + parsedLine[1] + "\",\"" + parsedLine[2] + "\",\"" + parsedLine[3] + "\",\"" + parsedLine[4] + "\")";
+
+            settingsDataBase.execSQL(queryToExecute);
+        }
+
+
+    }
 }

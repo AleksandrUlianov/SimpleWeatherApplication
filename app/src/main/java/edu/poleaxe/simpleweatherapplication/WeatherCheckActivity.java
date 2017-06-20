@@ -44,6 +44,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
     private ArrayList<ForecastInstance> forecastListToDisplay = new ArrayList<>();
     private WeatherEntryAdapter weatherEntryAdapter;
 
+    private static OpenWeatherMapAPI openWeatherMapAPI = new OpenWeatherMapAPI();
 
     private static TemperatureDegrees   temperatureDegrees  = TemperatureDegrees.CELSIUS;
     private static UnitMeasurements     unitMeasurements    = UnitMeasurements.METRIC;
@@ -167,7 +168,11 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
             if (settingsDBAvailable){
                 ApplySettingsFromDB();
+                openWeatherMapAPI.setContext(this);
+                openWeatherMapAPI.execute();
             }
+
+
     }
 
     private void ApplySettingsFromDB() {
@@ -188,7 +193,8 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     private void UpdateWeather(){
-        CheckCitiesList();
+
+
 //        ArrayList<ForecastInstance> tmpForecastList;
 //        tmpForecastList = forecastProcessor.RetrieveWeather(forecastPeriod);
 //        if (tmpForecastList != null) {
@@ -199,7 +205,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
 
-    private void CheckCitiesList(){
-        new OpenWeatherMapAPI().UpdateCitiesDB(this);
+    public void callBackToUI(String messageToDisplay){
+        new DialogManager().DisplayDialog(DialogsTypesEnum.TOAST, messageToDisplay, this);
     }
 }
