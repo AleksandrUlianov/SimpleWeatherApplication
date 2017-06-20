@@ -120,6 +120,7 @@ public class DBManager {
         listToReturn.add("insert into settings(key, value) values ('period', 'NOW');");
         listToReturn.add("drop table if exists PreviouslyBrowsedLocations;");
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
+        listToReturn.add("create table CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         return listToReturn;
     }
 
@@ -201,6 +202,7 @@ public class DBManager {
            }
        }
     }
+
 
 
     public void addLocationToSearchHistory(String locationID){

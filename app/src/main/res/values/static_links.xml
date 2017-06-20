@@ -1,0 +1,4 @@
+<resources>
+    <string name = "citi_list"> http://openweathermap.org/help/city_list.txt</string>
+    <string name = "picture_link">http://openweathermap.org/img/w/" ext = ".png</string>
+</resources>

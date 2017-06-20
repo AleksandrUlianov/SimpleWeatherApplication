@@ -21,6 +21,7 @@ import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetC
 import edu.poleaxe.simpleweatherapplication.visualcomponents.WeatherEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastProcessor;
+import edu.poleaxe.simpleweatherapplication.weatherapi.OpenWeatherMapAPI;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -187,12 +188,18 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     private void UpdateWeather(){
-        ArrayList<ForecastInstance> tmpForecastList;
-        tmpForecastList = forecastProcessor.RetrieveWeather(forecastPeriod);
-        if (tmpForecastList != null) {
-            forecastListToDisplay.clear();
-            forecastListToDisplay.addAll(tmpForecastList);
-            weatherEntryAdapter.notifyDataSetChanged();
-        }
+        CheckCitiesList();
+//        ArrayList<ForecastInstance> tmpForecastList;
+//        tmpForecastList = forecastProcessor.RetrieveWeather(forecastPeriod);
+//        if (tmpForecastList != null) {
+//            forecastListToDisplay.clear();
+//            forecastListToDisplay.addAll(tmpForecastList);
+//            weatherEntryAdapter.notifyDataSetChanged();
+//        }
+    }
+
+
+    private void CheckCitiesList(){
+        new OpenWeatherMapAPI().UpdateCitiesDB(this);
     }
 }
