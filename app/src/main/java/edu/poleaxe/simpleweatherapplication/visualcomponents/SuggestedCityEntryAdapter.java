@@ -30,6 +30,11 @@ implements AdapterView.OnItemClickListener{
     }
 
     @Override
+    public String convertToString(Cursor resultSet){
+        return dbManager.cityToFromCursor(resultSet).getLocationName();
+    }
+
+    @Override
     public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
         return dbManager.getCursorOverSuggestedCities((String) constraint);
     }
@@ -59,7 +64,9 @@ implements AdapterView.OnItemClickListener{
         if (resulSet != null) {
             City selectedCity = dbManager.cityToFromCursor(resulSet);
             ((WeatherCheckActivity) context).setSelectedCity(selectedCity);
-            ((AutoCompleteTextView) view.findViewById(R.id.tvSuggestedCity)).setText(selectedCity.getLocationName());
+
+            ((AutoCompleteTextView) ((WeatherCheckActivity) context).findViewById(R.id.tvSuggestedCity)).setText(selectedCity.getLocationName());
+
         }
     }
 }

@@ -28,21 +28,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * main Activity yof an app. contains:
- * - search bar with autocomplete and search history
- * - settings button to define units for measurement, temperature degrees unit
- * - update button
- * - period to get weather forecast
- * - weather widgets
  */
 public class WeatherCheckActivity extends AppCompatActivity {
 
     private DialogManager dialogManager = new DialogManager();
     private DBManager dbManager = new DBManager();
-    private ForecastProcessor forecastProcessor;
 
     private ArrayList<ForecastInstance> forecastListToDisplay = new ArrayList<>();
-    private WeatherEntryAdapter weatherEntryAdapter;
 
     private static OpenWeatherMapAPI openWeatherMapAPI = new OpenWeatherMapAPI();
 
@@ -52,7 +44,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     private City selectedCity;
 
-    boolean openedFirstTime = true;
+    private boolean openedFirstTime = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,13 +58,11 @@ public class WeatherCheckActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 UpdateWeather();
-                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();*/
             }
         }
         );
 
-        weatherEntryAdapter = new WeatherEntryAdapter(this, forecastListToDisplay);
+        WeatherEntryAdapter weatherEntryAdapter = new WeatherEntryAdapter(this, forecastListToDisplay);
         ListView forecastListView = (ListView) findViewById(R.id.lvForecastList);
         forecastListView.setAdapter(weatherEntryAdapter);
 
@@ -94,6 +84,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
         SuggestedCityEntryAdapter adapter = new SuggestedCityEntryAdapter(this, R.layout.suggested_city_line, dbManager);
         tvSuggestedCity.setAdapter(adapter);
+        tvSuggestedCity.setOnItemClickListener(adapter);
 
     }
 
@@ -106,15 +97,16 @@ public class WeatherCheckActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *
+     */
     private void ProcessCheckedRB() {
 
         Map settingsToChange = new HashMap<String, String>();
         settingsToChange.put("forecastPeriod",forecastPeriod.name());
-        dbManager.updateAllSettings(settingsToChange);
-
+        dbManager.updateAnySettings(settingsToChange);
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -125,12 +117,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
@@ -158,40 +145,35 @@ public class WeatherCheckActivity extends AppCompatActivity {
         }
     }
 
-    void SetUpApplicationConditions(){
+    /**
+     *
+     */
+    private void SetUpApplicationConditions(){
 
         //Check availability of settings Db and apply settings if it is possible. Use default if not.
-        forecastProcessor = new ForecastProcessor(this);
+        ForecastProcessor forecastProcessor = new ForecastProcessor(this);
         boolean settingsDBAvailable;
             try {
                 settingsDBAvailable = dbManager.PrepareAvailableSettingsDB(this);
             }
             catch (IllegalAccessError|NullPointerException e){
-                dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Unable to reach saved settigns. Default will be used", this);
+                dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Settings DB not available. Default settings will be used", this);
                 return;
             }
 
-            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, settingsDBAvailable ? "Settings DB available" : "Settings DB not available", this);
-
-            if (settingsDBAvailable){
-                ApplySettingsFromDB();
-                openWeatherMapAPI.setContext(this);
-                openWeatherMapAPI.execute();
+            if (!settingsDBAvailable){
+                dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Settings DB not available. Default settings will be used", this);
             }
 
+            ApplySettingsFromDB();
+            openWeatherMapAPI.setContext(this);
+            openWeatherMapAPI.execute();
 
     }
 
-    private static ArrayList<City> getListOfSuggestedCities(String enteredPartOfName){
-        ArrayList<City> citiList = new ArrayList<>();
-        citiList.add(new City("1","Saratov","1","1","1"));
-        citiList.add(new City("2","Samara","2","2","2"));
-        citiList.add(new City("3","Samarkand","3","3","3"));
-        return citiList;
-        //        if (enteredPartOfName == null || enteredPartOfName.trim().equals("")){return new City[0];}
-        //        return new DBManager().GetListOfSuggestedCities(enteredPartOfName);
-    }
-
+    /**
+     *
+     */
     private void ApplySettingsFromDB() {
         String parameterValue;
         parameterValue      = dbManager.getSettingValue("degreesType");
@@ -201,36 +183,26 @@ public class WeatherCheckActivity extends AppCompatActivity {
         parameterValue      = dbManager.getSettingValue("period");
         forecastPeriod      = parameterValue == null ? forecastPeriod : ForecastPeriods.valueOf(parameterValue);
 
-//        for (int i = 1; i < 15; i++){
-//            String smthToAdd = String.valueOf(i);
-//            forecastListToDisplay.add(new ForecastInstance(smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd,smthToAdd));
-//        }
-
-
     }
 
+    /**
+     *
+     */
     private void UpdateWeather(){
-
-
-//        ArrayList<ForecastInstance> tmpForecastList;
-//        tmpForecastList = forecastProcessor.RetrieveWeather(forecastPeriod);
-//        if (tmpForecastList != null) {
-//            forecastListToDisplay.clear();
-//            forecastListToDisplay.addAll(tmpForecastList);
-//            weatherEntryAdapter.notifyDataSetChanged();
-//        }
+        if (selectedCity != null){
+            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, selectedCity.getLocationName(),this);
+        }
+        else {
+            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "City hasn't been selected",this);
+        }
     }
 
-
-    public void callBackToUI(String messageToDisplay){
-        new DialogManager().DisplayDialog(DialogsTypesEnum.TOAST, messageToDisplay, this);
-    }
-
+    /**
+     *
+     * @param selectedCity
+     */
     public void setSelectedCity(City selectedCity) {
         this.selectedCity = selectedCity;
     }
 
-    public City getSelectedCity() {
-        return selectedCity;
-    }
 }

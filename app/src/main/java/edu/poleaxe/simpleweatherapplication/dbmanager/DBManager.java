@@ -5,14 +5,8 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
-import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
-import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
-import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.Log;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
-
-import java.io.File;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -142,15 +136,6 @@ public class DBManager {
         return settingsDataBase == null ? PrepareSettingsDB() : true;
     }
 
-    public boolean DBExists(){
-
-        return (new File(dbPath)).exists();
-    }
-
-    public String getDBPath(){
-        return Environment.getExternalStorageDirectory().getAbsolutePath();
-    }
-
     /**
      *
      * @param key String name of a attribute of settings to get from settings DB
@@ -181,7 +166,7 @@ public class DBManager {
      * method to update all settings
      * @param settingsToSet Map pf keys and values of settings to update
      */
-    public void updateAllSettings(Map<String, String> settingsToSet){
+    public void updateAnySettings(Map<String, String> settingsToSet){
 
         for (Map.Entry<String, String> entry : settingsToSet.entrySet())
         {
@@ -194,7 +179,7 @@ public class DBManager {
      * @param key String name of setting to update
      * @param value String value to set
      */
-    public void UpdateSetting(String key, String value) {
+    private void UpdateSetting(String key, String value) {
        String statementToSet = "update settings set value = \"" + value + "\" where key = \"" + key + "\";";
        try {
            settingsDataBase.execSQL(statementToSet);
@@ -309,7 +294,7 @@ public class DBManager {
      * @return
      */
     public Cursor getCursorOverSuggestedCities(String enteredPartOfName){
-        Cursor resultsSet = null;
+        Cursor resultsSet;
         try {
             String stringToExecute = "select \n" +
                     "locationID as _id,\n" +
