@@ -63,9 +63,11 @@ implements AdapterView.OnItemClickListener{
         Cursor resulSet = (Cursor) listView.getItemAtPosition(position);
         if (resulSet != null) {
             City selectedCity = dbManager.cityToFromCursor(resulSet);
-            ((WeatherCheckActivity) context).setSelectedCity(selectedCity);
+            WeatherCheckActivity parentActivity = (WeatherCheckActivity) context;
+            parentActivity.setSelectedCity(selectedCity);
 
-            ((AutoCompleteTextView) ((WeatherCheckActivity) context).findViewById(R.id.tvSuggestedCity)).setText(selectedCity.getLocationName());
+            ((AutoCompleteTextView) parentActivity.findViewById(R.id.tvSuggestedCity)).setText(selectedCity.getLocationName());
+
 
         }
     }

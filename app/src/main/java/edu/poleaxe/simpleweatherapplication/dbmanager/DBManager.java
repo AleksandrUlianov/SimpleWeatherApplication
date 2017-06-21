@@ -312,4 +312,57 @@ public class DBManager {
         }
         return resultsSet;
     }
+
+    /**
+     *
+     * @return
+     */
+    public City getLastCity() {
+        City lastCity;
+        String stringToExecute = "select value from settings where key = \"lastLocation\"";
+        Cursor resultSet;
+        try {
+            resultSet = settingsDataBase.rawQuery(stringToExecute, null);
+        }
+        catch (SQLException e){
+            new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
+            return null;
+        }
+
+        if (resultSet == null){
+            return  null;
+        }
+
+        resultSet.moveToFirst();
+        String lastCityID = resultSet.getString(0);
+        //resultSet.close();
+
+        if (lastCityID.equals("null")){return null;}
+
+        stringToExecute = "select \n" +
+                "locationID as _id,\n" +
+                "locationname,\n" +
+                "lat,\n" +
+                "lon,\n" +
+                "countrycode from CityList \n" +
+                "where locationID = \"" + lastCityID + "\" \n" +
+                "order by countrycode;";
+
+        try {
+            resultSet = settingsDataBase.rawQuery(stringToExecute, null);
+        }
+        catch (SQLException e){
+            new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
+            return null;
+        }
+
+        if (resultSet == null){
+            return  null;
+        }
+        resultSet.moveToFirst();
+        lastCity = cityToFromCursor(resultSet);
+        resultSet.close();
+
+        return lastCity;
+    }
 }

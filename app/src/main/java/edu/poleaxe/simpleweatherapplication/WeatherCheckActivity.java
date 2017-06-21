@@ -182,6 +182,8 @@ public class WeatherCheckActivity extends AppCompatActivity {
         unitMeasurements    = parameterValue == null ? unitMeasurements : UnitMeasurements.valueOf(parameterValue);
         parameterValue      = dbManager.getSettingValue("period");
         forecastPeriod      = parameterValue == null ? forecastPeriod : ForecastPeriods.valueOf(parameterValue);
+        selectedCity        = dbManager.getLastCity();
+        ((AutoCompleteTextView) findViewById(R.id.tvSuggestedCity)).setText(selectedCity == null ? "" : selectedCity.getLocationName());
 
     }
 
@@ -203,6 +205,9 @@ public class WeatherCheckActivity extends AppCompatActivity {
      */
     public void setSelectedCity(City selectedCity) {
         this.selectedCity = selectedCity;
+        Map<String, String> settingToUpdate = new HashMap<>();
+        settingToUpdate.put("lastLocation",selectedCity.getLocationID());
+        dbManager.updateAnySettings(settingToUpdate);
     }
 
 }
