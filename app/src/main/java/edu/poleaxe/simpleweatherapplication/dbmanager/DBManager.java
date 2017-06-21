@@ -244,8 +244,35 @@ public class DBManager {
         return searchHistoryList;
     }
 
+    private boolean checkExistanceOfCitiesBase(){
+        Cursor resultSet;
+
+        String stringToExecute = "select count(*) from CityList";
+        try {
+            resultSet = settingsDataBase.rawQuery(stringToExecute, null);
+        }
+        catch (SQLException e){
+            new LogManager().captureLog(parentActivity.getApplicationContext(),e.getMessage());
+            return false;
+        }
+        if (resultSet == null){
+            return false;
+        }
+
+        resultSet.moveToFirst();
+        if (Integer.valueOf(resultSet.getString(0)) > 0) {
+            return true;
+        }
+
+
+        resultSet.close();
+        return false;
+    }
+
 
     public void UpdateCityListDB(ArrayList<String> citiesToAdd){
+
+        if (checkExistanceOfCitiesBase()){return;}
 
         settingsDataBase.execSQL("create table if not exists CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         settingsDataBase.execSQL("delete from CityList;");
@@ -274,40 +301,6 @@ public class DBManager {
 
         return new City(resultsSet.getString(0), resultsSet.getString(1), resultsSet.getString(2), resultsSet.getString(3), resultsSet.getString(4));
 
-    }
-
-    /**
-     *
-     * @param enteredPartOfName
-     * @return
-     */
-    public ArrayList<City> GetListOfSuggestedCities(String enteredPartOfName) {
-        ArrayList<City> suggestedCitiesToReturn = new ArrayList<>();
-
-        Cursor resultsSet = null;
-        try {
-            resultsSet = settingsDataBase.rawQuery("select \n" +
-                    "locationID as _id,\n" +
-                    "locationname,\n" +
-                    "lat,\n" +
-                    "lon,\n" +
-                    "countrycode from CityList \n" +
-                    "where locationname like \"" + enteredPartOfName + "%\" \n" +
-                    "order by countrycode;", null);
-        }
-        catch (SQLException e){
-            new LogManager().captureLog(parentActivity, e.getMessage());
-            return null;
-        }
-        if (resultsSet != null) {
-            while (!resultsSet.isAfterLast()){
-
-                suggestedCitiesToReturn.add(cityToFromCursor(resultsSet));
-
-                resultsSet.moveToNext();
-            }
-        }
-        return suggestedCitiesToReturn;
     }
 
     /**
