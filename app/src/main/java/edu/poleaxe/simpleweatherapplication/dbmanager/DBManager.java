@@ -8,6 +8,8 @@ import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
 import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
+import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.Log;
+import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
 
 import java.io.File;
 import java.lang.reflect.Array;
@@ -120,6 +122,7 @@ public class DBManager {
         listToReturn.add("insert into settings(key, value) values ('period', 'NOW');");
         listToReturn.add("drop table if exists PreviouslyBrowsedLocations;");
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
+        listToReturn.add("drop table if exists CityList;");
         listToReturn.add("create table CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         return listToReturn;
     }
@@ -244,6 +247,9 @@ public class DBManager {
 
     public void UpdateCityListDB(ArrayList<String> citiesToAdd){
 
+        settingsDataBase.execSQL("create table if not exists CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
+        settingsDataBase.execSQL("delete from CityList;");
+
         for (String lineToExecute : citiesToAdd
                 ) {
             String[] parsedLine = lineToExecute.split("\t");
@@ -254,6 +260,78 @@ public class DBManager {
             settingsDataBase.execSQL(queryToExecute);
         }
 
+    }
 
+    /**
+     *
+     * @param resultsSet
+     * @return
+     */
+    public City cityToFromCursor(Cursor resultsSet){
+        if (resultsSet == null) {
+            return null;
+        }
+
+        return new City(resultsSet.getString(0), resultsSet.getString(1), resultsSet.getString(2), resultsSet.getString(3), resultsSet.getString(4));
+
+    }
+
+    /**
+     *
+     * @param enteredPartOfName
+     * @return
+     */
+    public ArrayList<City> GetListOfSuggestedCities(String enteredPartOfName) {
+        ArrayList<City> suggestedCitiesToReturn = new ArrayList<>();
+
+        Cursor resultsSet = null;
+        try {
+            resultsSet = settingsDataBase.rawQuery("select \n" +
+                    "locationID as _id,\n" +
+                    "locationname,\n" +
+                    "lat,\n" +
+                    "lon,\n" +
+                    "countrycode from CityList \n" +
+                    "where locationname like \"" + enteredPartOfName + "%\" \n" +
+                    "order by countrycode;", null);
+        }
+        catch (SQLException e){
+            new LogManager().captureLog(parentActivity, e.getMessage());
+            return null;
+        }
+        if (resultsSet != null) {
+            while (!resultsSet.isAfterLast()){
+
+                suggestedCitiesToReturn.add(cityToFromCursor(resultsSet));
+
+                resultsSet.moveToNext();
+            }
+        }
+        return suggestedCitiesToReturn;
+    }
+
+    /**
+     *
+     * @param enteredPartOfName
+     * @return
+     */
+    public Cursor getCursorOverSuggestedCities(String enteredPartOfName){
+        Cursor resultsSet = null;
+        try {
+            String stringToExecute = "select \n" +
+                    "locationID as _id,\n" +
+                    "locationname,\n" +
+                    "lat,\n" +
+                    "lon,\n" +
+                    "countrycode from CityList \n" +
+                    "where locationname like \"" + enteredPartOfName + "%\" \n" +
+                    "order by countrycode;";
+            resultsSet = settingsDataBase.rawQuery(stringToExecute, null);
+        }
+        catch (SQLException e){
+            new LogManager().captureLog(parentActivity, e.getMessage());
+            return null;
+        }
+        return resultsSet;
     }
 }

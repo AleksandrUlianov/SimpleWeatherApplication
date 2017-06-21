@@ -31,6 +31,16 @@
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
+            <AutoCompleteTextView
+                    android:id = "@+id/tvSuggestedCity"
+                    android:layout_height="wrap_content"
+                    android:layout_width="300dp"
+                    app:layout_collapseMode="pin"
+                    app:theme="@style/Widget.AppCompat.AutoCompleteTextView"
+                    android:completionThreshold="2"
+
+            />
+
             <RadioGroup
                     android:orientation="horizontal"
                     android:layout_width="match_parent"

@@ -44,7 +44,7 @@ public class WeatherEntryAdapter extends BaseAdapter{
         if(convertView == null){
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = (View) inflater.inflate(
+            convertView = inflater.inflate(
                     R.layout.forecast_line, null);
         }
 

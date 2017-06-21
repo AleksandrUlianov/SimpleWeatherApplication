@@ -7,9 +7,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ListView;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
+import android.widget.*;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
 import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
@@ -18,6 +16,8 @@ import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogMa
 import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogsTypesEnum;
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionException;
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionManager;
+import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
+import edu.poleaxe.simpleweatherapplication.visualcomponents.SuggestedCityEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.WeatherEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastProcessor;
@@ -49,6 +49,8 @@ public class WeatherCheckActivity extends AppCompatActivity {
     private static TemperatureDegrees   temperatureDegrees  = TemperatureDegrees.CELSIUS;
     private static UnitMeasurements     unitMeasurements    = UnitMeasurements.METRIC;
     private static ForecastPeriods      forecastPeriod      = ForecastPeriods.NOW;
+
+    private City selectedCity;
 
     boolean openedFirstTime = true;
 
@@ -87,6 +89,11 @@ public class WeatherCheckActivity extends AppCompatActivity {
                 }
             }
         });
+
+        AutoCompleteTextView tvSuggestedCity = (AutoCompleteTextView) findViewById(R.id.tvSuggestedCity);
+
+        SuggestedCityEntryAdapter adapter = new SuggestedCityEntryAdapter(this, R.layout.suggested_city_line, dbManager);
+        tvSuggestedCity.setAdapter(adapter);
 
     }
 
@@ -175,6 +182,16 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     }
 
+    private static ArrayList<City> getListOfSuggestedCities(String enteredPartOfName){
+        ArrayList<City> citiList = new ArrayList<>();
+        citiList.add(new City("1","Saratov","1","1","1"));
+        citiList.add(new City("2","Samara","2","2","2"));
+        citiList.add(new City("3","Samarkand","3","3","3"));
+        return citiList;
+        //        if (enteredPartOfName == null || enteredPartOfName.trim().equals("")){return new City[0];}
+        //        return new DBManager().GetListOfSuggestedCities(enteredPartOfName);
+    }
+
     private void ApplySettingsFromDB() {
         String parameterValue;
         parameterValue      = dbManager.getSettingValue("degreesType");
@@ -207,5 +224,13 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     public void callBackToUI(String messageToDisplay){
         new DialogManager().DisplayDialog(DialogsTypesEnum.TOAST, messageToDisplay, this);
+    }
+
+    public void setSelectedCity(City selectedCity) {
+        this.selectedCity = selectedCity;
+    }
+
+    public City getSelectedCity() {
+        return selectedCity;
     }
 }

@@ -25,4 +25,8 @@ public class City {
     public String getLocationCountryCode() {
         return locationCountryCode;
     }
+
+    public String getLocationID() {
+        return locationID;
+    }
 }
