@@ -36,7 +36,6 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
     private ArrayList<String> getCityList() throws IOException, MalformedURLException {
         ArrayList<String> listOfCitiesToAddToDB = new ArrayList<>();
         String cityLinkURLString = parentActivity.getResources().getString(R.string.citi_list);
-        //String cityLinkURLString = "http://openweathermap.org/help/city_list.txt";
         URL cityListURL = new URL(cityLinkURLString);
         HttpURLConnection connection = (HttpURLConnection) cityListURL.openConnection();
         connection.connect();

@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
+import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
+
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -118,6 +120,10 @@ public class DBManager {
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
         listToReturn.add("drop table if exists CityList;");
         listToReturn.add("create table CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
+        listToReturn.add("drop table if exists cacheddata;");
+        listToReturn.add("create table cacheddata(locationID text not null unique, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
+                "forecastPrecipitation text, forecastHumidity text, forecastUVIndex text, forecastTemperature text," +
+                "forecastPressure text, forecastVisibility text);");
         return listToReturn;
     }
 
@@ -131,7 +137,7 @@ public class DBManager {
     public boolean PrepareAvailableSettingsDB(Activity parentActivity) throws IllegalAccessError, NullPointerException{
         this.parentActivity = parentActivity;
 
-        fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, this.parentActivity);
+        fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, this.parentActivity, false);
 
         return settingsDataBase == null ? PrepareSettingsDB() : true;
     }
@@ -364,5 +370,53 @@ public class DBManager {
         resultSet.close();
 
         return lastCity;
+    }
+
+    public void CachedData(City cityToStore, ForecastInstance forecastInstance){
+        String stringToExecute = "insert " +
+                "into cacheddata(locationID" +
+                ", updatetime" +
+                ", forecastDateTime" +
+                ", forecastPhenomena" +
+                ", forecastPrecipitation" +
+                ", forecastHumidity" +
+                ", forecastUVIndex" +
+                ", forecastTemperature" +
+                ", forecastPressure" +
+                ", forecastVisibility" +
+                ") " +
+                "values (" +
+                "'" + cityToStore.getLocationID() + "'" +
+                ",'" + String.valueOf(System.currentTimeMillis()) + "'" +
+                ",'" + forecastInstance.getForecastDateTime() + "'" +
+                ",'" + forecastInstance.getForecastPhenomena() + "'" +
+                ",'" + forecastInstance.getForecastPrecipitation() + "'" +
+                ",'" + forecastInstance.getForecastHumidity() + "'" +
+                ",'" + forecastInstance.getForecastUVIndex() + "'" +
+                ",'" + forecastInstance.getForecastTemperature() + "'" +
+                ",'" + forecastInstance.getForecastPressure() + "'" +
+                ",'" + forecastInstance.getForecastVisibility() + "'" +
+                ")";
+
+        settingsDataBase.execSQL(stringToExecute);
+
+    }
+
+    /**
+     *
+     * @param cityToClean
+     */
+    private void CleanUpCityCache(City cityToClean){
+        String stringToExecute = "delete from CityList where locationID = '" + cityToClean.getLocationID() + "'";
+        settingsDataBase.execSQL(stringToExecute);
+    }
+
+    /**
+     *
+     */
+    private void CleanUpCache() {
+        String stringToExecute = "delete from CityList where (" + String.valueOf(System.currentTimeMillis()) + " - updatetime) > 600000";
+        settingsDataBase.execSQL(stringToExecute);
+        //TODO decide when it should be cleaned up
     }
 }

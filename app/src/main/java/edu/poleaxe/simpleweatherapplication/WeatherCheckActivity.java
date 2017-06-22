@@ -20,8 +20,8 @@ import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.SuggestedCityEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.WeatherEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
-import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastProcessor;
 import edu.poleaxe.simpleweatherapplication.weatherapi.OpenWeatherMapAPI;
+import edu.poleaxe.simpleweatherapplication.support.SupportWeather;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,7 +57,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                UpdateWeather();
+                DoSmth();
             }
         }
         );
@@ -150,8 +150,6 @@ public class WeatherCheckActivity extends AppCompatActivity {
      */
     private void SetUpApplicationConditions(){
 
-        //Check availability of settings Db and apply settings if it is possible. Use default if not.
-        ForecastProcessor forecastProcessor = new ForecastProcessor(this);
         boolean settingsDBAvailable;
             try {
                 settingsDBAvailable = dbManager.PrepareAvailableSettingsDB(this);
@@ -166,6 +164,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
             }
 
             ApplySettingsFromDB();
+
             openWeatherMapAPI.setContext(this);
             openWeatherMapAPI.execute();
 
@@ -187,6 +186,10 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     }
 
+    private void DoSmth(){
+        dialogManager.DisplayDialog(DialogsTypesEnum.ALERT, (new SupportWeather()).getCurrentTime(),this);
+    }
+
     /**
      *
      */
@@ -197,6 +200,13 @@ public class WeatherCheckActivity extends AppCompatActivity {
         else {
             dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "City hasn't been selected",this);
         }
+        //TODO
+        //1. If there is cached data for the selected city
+        //2. if no cached data - check connection
+        //3. if no connection - display error
+        //4. retrieve data from server
+        //5. cache data
+        //6. update weather
     }
 
     /**

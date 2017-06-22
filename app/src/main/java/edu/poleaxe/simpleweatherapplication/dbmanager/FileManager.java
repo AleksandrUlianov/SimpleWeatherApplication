@@ -82,7 +82,7 @@ public class FileManager {
      * @param parentActivity Activity where from method was called
      * @return File where DB will be stored. could be NULL in case it is impossible to instantiate a file because of different reasonss
      */
-    public File CheckOrCreateFileByPath(String filePath, String fileNameWithExtentios, Activity parentActivity){
+    public File CheckOrCreateFileByPath(String filePath, String fileNameWithExtentios, Activity parentActivity, boolean checkOnly){
 
         this.parentActivity = parentActivity;
 
@@ -94,6 +94,12 @@ public class FileManager {
         RequestPermission();
 
         File fileDirToCheck = new File(filePath);
+        File fileToCheck = new File(fileDirToCheck + "/" + fileNameWithExtentios);
+
+        if (checkOnly) {
+            return fileToCheck.exists() ? fileDirToCheck : null;
+        }
+
         try {
             CheckOrMakeDir(fileDirToCheck);
         } catch (IOException|SecurityException e) {
@@ -102,7 +108,7 @@ public class FileManager {
 
         }
 
-        File fileToCheck = new File(fileDirToCheck + "/" + fileNameWithExtentios);
+
         try {
             CheckOrCreateFile(fileToCheck);
         } catch (IOException|SecurityException e) {
