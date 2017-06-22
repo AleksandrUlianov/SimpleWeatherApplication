@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
+import edu.poleaxe.simpleweatherapplication.support.LogManager;
 
 /**class to display appropriate dialog or toast according to input parameters. Also processes parameter to be valid.
  * Created by Aleksandr Ulianov (poleaxe) on 28.05.2017.
@@ -46,8 +47,7 @@ public class DialogManager {
     public void DisplayDialog(DialogsTypesEnum dialogTypeToDisplay, String messageToDisplay, Activity activityToDisplay){
 
         if (messageToDisplay == null || messageToDisplay.trim().equals("")) {
-            //TODO log an error
-            //TODO send a message
+            new LogManager().captureLog(activityToDisplay.getApplicationContext(), "Empty message to display ina  dialog");
             messageToDisplay = "Unknown error happened";
         }
 
@@ -56,8 +56,7 @@ public class DialogManager {
         }
 
         if (activityToDisplay == null){
-            //TODO log an error
-            //TODO send a message
+            //unfortunately, application will fall here
             return;
         }
 

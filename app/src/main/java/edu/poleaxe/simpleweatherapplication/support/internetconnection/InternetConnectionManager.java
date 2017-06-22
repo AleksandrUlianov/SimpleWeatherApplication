@@ -6,10 +6,6 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.os.RemoteException;
-import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.Log;
-
-import java.security.AccessControlException;
 
 /**
  * Created by Aleksandr Ulianov (poleaxe) on 10.06.2017.
@@ -24,7 +20,6 @@ public class InternetConnectionManager {
      */
     public boolean IsConnectionEstablished(Activity parentActivity) throws InternetConnectionException {
         if (parentActivity == null) {
-            new Log().WriteLog();
             throw new InternetConnectionException("Internal error happened during gaining access to network hardware");
         }
 
@@ -46,7 +41,7 @@ public class InternetConnectionManager {
             availableNetwork = connectivityManager.getActiveNetwork();
         }
         else {
-            //TODO handle old SDKs to getActiveNetwork
+            //unfortunately, i have no ideas which best practice to use in this case
         }
 
         return availableNetwork;
