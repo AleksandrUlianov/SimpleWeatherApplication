@@ -372,7 +372,7 @@ public class DBManager {
         return lastCity;
     }
 
-    public void CachedData(City cityToStore, ForecastInstance forecastInstance){
+    public void CacheData(City cityToStore, ForecastInstance forecastInstance){
         String stringToExecute = "insert " +
                 "into cacheddata(locationID" +
                 ", updatetime" +

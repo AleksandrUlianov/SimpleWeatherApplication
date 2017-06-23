@@ -57,7 +57,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DoSmth();
+            UpdateWeather();
             }
         }
         );
@@ -194,6 +194,10 @@ public class WeatherCheckActivity extends AppCompatActivity {
      *
      */
     private void UpdateWeather(){
+        OpenWeatherMapAPI weatherAPI = new OpenWeatherMapAPI();
+        weatherAPI.setContext(this);
+        weatherAPI.execute();
+
         if (selectedCity != null){
             dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, selectedCity.getLocationName(),this);
         }

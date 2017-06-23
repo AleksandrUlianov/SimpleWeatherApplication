@@ -1,18 +1,17 @@
 package edu.poleaxe.simpleweatherapplication.weatherapi;
 
 import android.app.Activity;
+import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
+import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.R;
 import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
+import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.io.*;
+import java.net.*;
 import java.util.ArrayList;
 
 /**
@@ -22,6 +21,10 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     private WeatherCheckActivity parentActivity;
 
+    /**
+     *
+     * @param parentActivity
+     */
     public void setContext(Activity parentActivity){
         this.parentActivity = (WeatherCheckActivity) parentActivity;
 
@@ -33,7 +36,7 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
      * @throws IOException
      * @throws MalformedURLException
      */
-    private ArrayList<String> getCityList() throws IOException, MalformedURLException {
+    private ArrayList<String> getCityList() throws IOException {
         ArrayList<String> listOfCitiesToAddToDB = new ArrayList<>();
         String cityLinkURLString = parentActivity.getResources().getString(R.string.citi_list);
         URL cityListURL = new URL(cityLinkURLString);
@@ -57,6 +60,9 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
         return listOfCitiesToAddToDB;
     }
 
+    /**
+     *
+     */
     public void UpdateCitiesDB(){
        //TODO check permissions and connection
         ArrayList<String> citiesToAdd = null;
@@ -75,9 +81,102 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     }
 
+
+    /**
+     * check if created connection to URL available
+     * @param connectionToCheck
+     * @return
+     */
+    public boolean ServerIsAvailable(HttpURLConnection connectionToCheck){
+        try{
+            connectionToCheck.setRequestMethod("HEAD");
+            return (connectionToCheck.getResponseCode() == HttpURLConnection.HTTP_OK);
+        } catch (IOException e) {
+            new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
+            return false;
+        }
+    }
+
+    public void RetireveDataFromServer(HttpURLConnection connection, String stringURLToConnect){
+
+        StringBuilder result = new StringBuilder();
+        InputStream inputStream;
+        BufferedReader bufferedReader;
+
+        try {
+            connection.connect();
+            inputStream = new BufferedInputStream(connection.getInputStream());
+            if (inputStream != null){
+                //bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                bufferedReader = new BufferedReader(new InputStreamReader(new URL(stringURLToConnect).openStream()));
+
+                String line;
+
+                while ((line = bufferedReader.readLine()) != null) {
+                    result.append(line);
+                }
+
+                inputStream.close();
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/", "testfile.txt");
+        FileOutputStream fileOutput = null;
+        fileOutput = new FileOutputStream(file);
+        OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutput);
+        outputStreamWriter.write(result.toString());
+        outputStreamWriter.flush();
+        fileOutput.getFD().sync();
+        outputStreamWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void RequestWeatherUpdate(ForecastPeriods forecastPeriods){
+        String stringURLToConnect;
+        switch (forecastPeriods){
+            case DAYS5:
+                stringURLToConnect = parentActivity.getResources().getString(R.string.citi_list);
+                break;
+            default:
+                stringURLToConnect = parentActivity.getResources().getString(R.string.citi_list);
+        }
+
+        if (stringURLToConnect.trim().equals("")){
+            new LogManager().captureLog(parentActivity.getApplicationContext(), "Empty connection. Nowhere to retrieve from");
+            return;
+        }
+
+        HttpURLConnection connection;
+        try {
+            connection = (HttpURLConnection) new URL(stringURLToConnect).openConnection();
+        } catch (IOException e) {
+            new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
+            return;
+        }
+
+        if (connection == null){
+            new LogManager().captureLog(parentActivity.getApplicationContext(), "Empty connection. Nowhere to retrieve from");
+            return;}
+
+        if (!ServerIsAvailable(connection)){
+            new LogManager().captureLog(parentActivity.getApplicationContext(), "Server is not responding. Cannot update forecast");
+            return;}
+
+        RetireveDataFromServer(connection, stringURLToConnect);
+
+        }
+
+
     @Override
     protected Void doInBackground(Void... voids) {
-        UpdateCitiesDB();
+        //UpdateCitiesDB();
+        RequestWeatherUpdate(ForecastPeriods.NOW);
         return null;
     }
 }
