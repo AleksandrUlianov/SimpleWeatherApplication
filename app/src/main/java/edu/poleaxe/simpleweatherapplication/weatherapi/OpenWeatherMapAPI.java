@@ -9,6 +9,7 @@ import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
+import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
 
 import java.io.*;
 import java.net.*;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     private WeatherCheckActivity parentActivity;
+    private City cityToCheck;
 
     /**
      *
@@ -28,6 +30,10 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
     public void setContext(Activity parentActivity){
         this.parentActivity = (WeatherCheckActivity) parentActivity;
 
+    }
+
+    public void setCityToCheck(City cityToCheck){
+        this.cityToCheck = cityToCheck;
     }
 
     /**
@@ -124,7 +130,8 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
         }
 
         try {
-        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/", "testfile.txt");
+        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/", "testweather_" + cityToCheck.getLocationID() + ".xml");
+
         FileOutputStream fileOutput = null;
         fileOutput = new FileOutputStream(file);
         OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutput);
@@ -139,13 +146,11 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     public void RequestWeatherUpdate(ForecastPeriods forecastPeriods){
         String stringURLToConnect;
-        switch (forecastPeriods){
-            case DAYS5:
-                stringURLToConnect = parentActivity.getResources().getString(R.string.citi_list);
-                break;
-            default:
-                stringURLToConnect = parentActivity.getResources().getString(R.string.citi_list);
+        if (cityToCheck == null){
+            return;
         }
+
+        stringURLToConnect = new ForecastProcessor(parentActivity).CreateAPIRequest(forecastPeriods, cityToCheck.getLocationID());
 
         if (stringURLToConnect.trim().equals("")){
             new LogManager().captureLog(parentActivity.getApplicationContext(), "Empty connection. Nowhere to retrieve from");

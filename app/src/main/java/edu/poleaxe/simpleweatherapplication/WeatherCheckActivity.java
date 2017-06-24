@@ -75,7 +75,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
                 if (rb.isChecked()){
                     forecastPeriod = ForecastPeriods.valueOf(rb.getTag().toString());
                     ProcessCheckedRB();
-                    UpdateWeather();
+                    //UpdateWeather();
                 }
             }
         });
@@ -194,16 +194,19 @@ public class WeatherCheckActivity extends AppCompatActivity {
      *
      */
     private void UpdateWeather(){
-        OpenWeatherMapAPI weatherAPI = new OpenWeatherMapAPI();
-        weatherAPI.setContext(this);
-        weatherAPI.execute();
+        if (selectedCity != null) {
+            OpenWeatherMapAPI weatherAPI = new OpenWeatherMapAPI();
+            weatherAPI.setContext(this);
+            weatherAPI.setCityToCheck(selectedCity);
+            weatherAPI.execute();
+        }
 
-        if (selectedCity != null){
-            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, selectedCity.getLocationName(),this);
-        }
-        else {
-            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "City hasn't been selected",this);
-        }
+//        if (selectedCity != null){
+//            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, selectedCity.getLocationID(),this);
+//        }
+//        else {
+//            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "City hasn't been selected",this);
+//        }
         //TODO
         //1. If there is cached data for the selected city
         //2. if no cached data - check connection

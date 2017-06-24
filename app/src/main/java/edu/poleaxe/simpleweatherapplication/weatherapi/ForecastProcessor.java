@@ -54,15 +54,33 @@ public class ForecastProcessor {
         String weatherCachedFileName;
         switch (forecastPeriods){
             case DAYS5:
-                weatherCachedFileName = parentActivity.getResources().getString(R.string.weatherDAYS5);
+                weatherCachedFileName = parentActivity.getResources().getString(R.string.weatherDAYS5file);
                 break;
             default:
-                weatherCachedFileName = parentActivity.getResources().getString(R.string.weatherNOW);
+                weatherCachedFileName = parentActivity.getResources().getString(R.string.weatherNOWfile);
         }
         String fullPathName = parentActivity.getCacheDir() + "//" + parentActivity.getResources().getString(R.string.cachedDataPath) +
                 cityToCache.getLocationID();
 
         return (new FileManager()).CheckOrCreateFileByPath(fullPathName,weatherCachedFileName,parentActivity, checkOnly);
+    }
+
+    public String CreateAPIRequest(ForecastPeriods forecastPeriods, String cityID){
+
+        String apiRequest = "";
+
+        switch (forecastPeriods){
+            case DAYS5:
+                apiRequest = parentActivity.getResources().getString(R.string.weatherForecastAPI);
+                break;
+            default:
+                apiRequest = parentActivity.getResources().getString(R.string.weatherNowAPI);
+        }
+
+        apiRequest = apiRequest + "id=" + cityID + "&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
+        //apiRequest = apiRequest + "id=498677&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
+
+        return apiRequest;
     }
 
     /**

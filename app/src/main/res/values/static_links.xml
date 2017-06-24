@@ -1,7 +1,10 @@
 <resources>
     <string name = "citi_list"> http://openweathermap.org/help/city_list.txt</string>
     <string name = "picture_link">http://openweathermap.org/img/w/" ext = ".png</string>
+    <string name = "weatherNowAPI">http://api.openweathermap.org/data/2.5/weather?</string>
+    <string name = "weatherForecastAPI">http://api.openweathermap.org/data/2.5/forecast?</string>
+    <string name = "APIkey">5fd6ebffc6ab32c5ad23dd612106aa6e</string>
     <string name = "cachedDataPath">testApplication/cachedWeather/</string>
-    <string name = "weatherNOW">NOW.xml</string>
-    <string name = "weatherDAYS5">DAYS5.xml</string>
+    <string name = "weatherNOWfile">NOW.xml</string>
+    <string name = "weatherDAYS5file">DAYS5.xml</string>
 </resources>
