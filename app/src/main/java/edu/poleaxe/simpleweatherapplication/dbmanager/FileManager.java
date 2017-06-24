@@ -2,11 +2,11 @@ package edu.poleaxe.simpleweatherapplication.dbmanager;
 
 import android.Manifest;
 import android.app.Activity;
+import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.support.CheckRuntimePermissions;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 
 /**Class to work with Files on storages. Check permissions to work, check existance of dirs/files, create dirs/files
  * Created by Aleksandr Ulianov (poleaxe) on 14.06.2017.
@@ -108,7 +108,6 @@ public class FileManager {
 
         }
 
-
         try {
             CheckOrCreateFile(fileToCheck);
         } catch (IOException|SecurityException e) {
@@ -118,4 +117,63 @@ public class FileManager {
 
         return fileToCheck;
     }
+
+    /**
+     *
+     * @param filePath
+     * @param fileName
+     * @return
+     */
+    public String PrepareXMLFileToParse(String filePath, String fileName){
+        FileInputStream in = null;
+        try {
+            in = new FileInputStream(filePath + "//" + fileName);
+            //in = new FileInputStream("" + Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/testweather_498677.xml");
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        InputStreamReader isr = new InputStreamReader(in);
+        BufferedReader inRd = new BufferedReader(isr);
+
+        StringBuilder data = new StringBuilder();
+
+        String text;
+        try {
+            while ((text = inRd.readLine()) != null) {
+                data.append(text);
+                data.append("\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            if (in != null) {
+                in.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return data.toString();
+    }
+
+    /**
+     *
+     * @param fileDirPath
+     * @param fullFileName
+     * @param stringBuilderToSave
+     * @throws IOException
+     */
+    public void SaveStringBuilderToFileByPath(String fileDirPath, String fullFileName, StringBuilder stringBuilderToSave) throws IOException {
+        File file = CheckOrCreateFileByPath(fileDirPath, fullFileName,parentActivity,false);
+        FileOutputStream fileOutput;
+        fileOutput = new FileOutputStream(file);
+        OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutput);
+        outputStreamWriter.write(stringBuilderToSave.toString());
+        outputStreamWriter.flush();
+        fileOutput.getFD().sync();
+        outputStreamWriter.close();
+
+    }
+
 }

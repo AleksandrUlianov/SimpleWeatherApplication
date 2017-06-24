@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
 import android.widget.Toast;
+import edu.poleaxe.simpleweatherapplication.customenums.DialogsTypesEnum;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 
 /**class to display appropriate dialog or toast according to input parameters. Also processes parameter to be valid.

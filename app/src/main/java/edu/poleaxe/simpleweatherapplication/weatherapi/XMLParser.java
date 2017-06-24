@@ -3,16 +3,20 @@ package edu.poleaxe.simpleweatherapplication.weatherapi;
 import android.app.Activity;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.util.Xml;
+import android.os.Build;
+import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.R;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
+import edu.poleaxe.simpleweatherapplication.dbmanager.FileManager;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogManager;
-import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogsTypesEnum;
+import edu.poleaxe.simpleweatherapplication.customenums.DialogsTypesEnum;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 /**class to process XML retrieved from weather forecast provider and create a set of forecast instances
@@ -42,19 +46,22 @@ public class XMLParser {
      * @param forecastPeriods period for which its necessary to retireve data
      * @return
      */
-    public ArrayList<ForecastInstance> RetrieveWeatherCached(ForecastPeriods forecastPeriods) {
+    public ArrayList<ForecastInstance> RetrieveWeatherCached(ForecastPeriods forecastPeriods, City selectedCity) {
         ArrayList<ForecastInstance> forecastInstancesToReturn = new ArrayList<>();
+
+        String fileDir= Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/";
+        String fullFileName = "testweather_" + selectedCity.getLocationID() + ".xml";
+
         Resources res = parentActivity.getResources();
-        int resourseID;
-        switch (forecastPeriods){
-            case DAYS5:
-                resourseID = R.xml.forecast_weather;
-                break;
-            case NOW:
-                default:
-                resourseID = R.xml.current_weather;
+
+        String toParse = new FileManager().PrepareXMLFileToParse(fileDir,fullFileName);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            try {
+                xmlResourceParser.setInput(new ByteArrayInputStream(toParse.getBytes(StandardCharsets.UTF_8)), String.valueOf(StandardCharsets.UTF_8));
+            } catch (XmlPullParserException e) {
+                e.printStackTrace();
+            }
         }
-        xmlResourceParser = res.getXml(resourseID);
 
         try {
             xmlResourceParser.next();

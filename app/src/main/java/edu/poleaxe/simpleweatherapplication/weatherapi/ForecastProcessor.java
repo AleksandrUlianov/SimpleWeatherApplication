@@ -4,10 +4,8 @@ import android.app.Activity;
 import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.R;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
+import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
 import edu.poleaxe.simpleweatherapplication.dbmanager.FileManager;
-import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogManager;
-import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogsTypesEnum;
-import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,7 +33,7 @@ public class ForecastProcessor {
 
         //TODO check last update and retrieve weather from API
         XMLParser cachedWeatherXMLParser = new XMLParser(parentActivity);
-        forecastInstanceArrayList = cachedWeatherXMLParser.RetrieveWeatherCached(forecastPeriods);
+        forecastInstanceArrayList = cachedWeatherXMLParser.RetrieveWeatherCached(forecastPeriods,);
 
         return forecastInstanceArrayList;
     }
@@ -65,24 +63,6 @@ public class ForecastProcessor {
         return (new FileManager()).CheckOrCreateFileByPath(fullPathName,weatherCachedFileName,parentActivity, checkOnly);
     }
 
-    public String CreateAPIRequest(ForecastPeriods forecastPeriods, String cityID){
-
-        String apiRequest = "";
-
-        switch (forecastPeriods){
-            case DAYS5:
-                apiRequest = parentActivity.getResources().getString(R.string.weatherForecastAPI);
-                break;
-            default:
-                apiRequest = parentActivity.getResources().getString(R.string.weatherNowAPI);
-        }
-
-        apiRequest = apiRequest + "id=" + cityID + "&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
-        //apiRequest = apiRequest + "id=498677&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
-
-        return apiRequest;
-    }
-
     /**
      *
      * @param forecastPeriods
@@ -101,5 +81,34 @@ public class ForecastProcessor {
         File fileToProcess = CheckCachedData(forecastPeriods, true, cityToCache);
 
         return true;
+    }
+
+    public ArrayList<ForecastInstance> GetWeatherForecastForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity){
+        //+used
+        ArrayList<ForecastInstance> forecastListToReturn = null;
+        DBManager dbManager = new DBManager();
+
+        long lastUpdateTime = dbManager.getLastUpdateTimeForCityForPeriod(forecastPeriods, selectedCity);
+        //if no cached data then get update from serve
+        long currentTime = System.currentTimeMillis();
+        if (currentTime - lastUpdateTime > (1800000)){
+            updateCache(forecastPeriods, selectedCity, dbManager);
+        }
+
+        forecastListToReturn = dbManager.getCachedForecast(selectedCity,forecastPeriods);
+        return  forecastListToReturn;
+    }
+
+    private void updateCache(ForecastPeriods forecastPeriods, City selectedCity, DBManager dbManager) {
+        dbManager.CleanUpCityCache(forecastPeriods, selectedCity);
+        OpenWeatherMapAPI apiServis = new OpenWeatherMapAPI();
+        apiServis.setCityToCheck(selectedCity);
+        apiServis.setContext(parentActivity);
+        apiServis.execute();
+        //TODO how to check when AsyncTask finished its work?
+        ArrayList<ForecastInstance> weatherDataFromXML = new XMLParser(parentActivity).RetrieveWeatherCached(forecastPeriods,selectedCity);
+        dbManager.CacheWeatherForecast(selectedCity, forecastPeriods, weatherDataFromXML);
+
+
     }
 }

@@ -1,4 +1,4 @@
-package edu.poleaxe.simpleweatherapplication.support.customdialogmanager;
+package edu.poleaxe.simpleweatherapplication.customenums;
 
 /**
  * Created by Aleksandr Ulianov (poleaxe) on 28.05.2017.

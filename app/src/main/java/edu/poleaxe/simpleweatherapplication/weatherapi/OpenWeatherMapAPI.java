@@ -1,19 +1,16 @@
 package edu.poleaxe.simpleweatherapplication.weatherapi;
 
 import android.app.Activity;
-import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.R;
 import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
-import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
+import edu.poleaxe.simpleweatherapplication.dbmanager.FileManager;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
-import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
 
 /**
  * Created by Aleksandr Ulianov (poleaxe) on 14.06.2017.
@@ -37,63 +34,11 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
     }
 
     /**
-     * Retrieves list of cities from the webserver
-     * @return ArrayList of Strings (each string - one city with its attributes) to be added to DB
-     * @throws IOException
-     * @throws MalformedURLException
-     */
-    private ArrayList<String> getCityList() throws IOException {
-        ArrayList<String> listOfCitiesToAddToDB = new ArrayList<>();
-        String cityLinkURLString = parentActivity.getResources().getString(R.string.citi_list);
-        URL cityListURL = new URL(cityLinkURLString);
-        HttpURLConnection connection = (HttpURLConnection) cityListURL.openConnection();
-        connection.connect();
-
-        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new MalformedURLException("Server returned HTTP " + connection.getResponseCode()
-                    + " " + connection.getResponseMessage());
-        }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(cityListURL.openStream()));
-        String str;
-        in.readLine();
-        while ((str = in.readLine()) != null) {
-            listOfCitiesToAddToDB.add(str);
-        }
-        in.close();
-        connection.disconnect();
-
-        return listOfCitiesToAddToDB;
-    }
-
-    /**
-     *
-     */
-    public void UpdateCitiesDB(){
-       //TODO check permissions and connection
-        ArrayList<String> citiesToAdd = null;
-        try {
-            citiesToAdd = getCityList();
-        } catch (IOException e) {
-            new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
-        }
-
-        if (citiesToAdd == null){
-            //TODO parentActivity.callBackToUI("An error occured while updating database of cities");
-            return;
-        }
-
-        new DBManager().UpdateCityListDB(citiesToAdd);
-
-    }
-
-
-    /**
      * check if created connection to URL available
      * @param connectionToCheck
      * @return
      */
-    public boolean ServerIsAvailable(HttpURLConnection connectionToCheck){
+    private boolean ServerIsAvailable(HttpURLConnection connectionToCheck){
         try{
             connectionToCheck.setRequestMethod("HEAD");
             return (connectionToCheck.getResponseCode() == HttpURLConnection.HTTP_OK);
@@ -103,54 +48,67 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
         }
     }
 
-    public void RetireveDataFromServer(HttpURLConnection connection, String stringURLToConnect){
+    private StringBuilder RetireveDataFromServer(HttpURLConnection connection, String stringURLToConnect) throws IOException {
 
         StringBuilder result = new StringBuilder();
-        InputStream inputStream;
         BufferedReader bufferedReader;
 
         try {
             connection.connect();
-            inputStream = new BufferedInputStream(connection.getInputStream());
-            if (inputStream != null){
-                //bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                bufferedReader = new BufferedReader(new InputStreamReader(new URL(stringURLToConnect).openStream()));
+            bufferedReader = new BufferedReader(new InputStreamReader(new URL(stringURLToConnect).openStream()));
 
-                String line;
+            String line;
 
-                while ((line = bufferedReader.readLine()) != null) {
-                    result.append(line);
+            while ((line = bufferedReader.readLine()) != null) {
+                if (line.trim().equals("")){
+                    continue;
                 }
-
-                inputStream.close();
-
+                result.append(line);
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        try {
-        File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/", "testweather_" + cityToCheck.getLocationID() + ".xml");
-
-        FileOutputStream fileOutput = null;
-        fileOutput = new FileOutputStream(file);
-        OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutput);
-        outputStreamWriter.write(result.toString());
-        outputStreamWriter.flush();
-        fileOutput.getFD().sync();
-        outputStreamWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        return result;
     }
 
-    public void RequestWeatherUpdate(ForecastPeriods forecastPeriods){
+    /**
+     *
+     * @param forecastPeriods
+     * @param cityID
+     * @return
+     */
+    private String CreateAPIRequest(ForecastPeriods forecastPeriods, String cityID){
+
+        String apiRequest;
+
+        switch (forecastPeriods){
+            case DAYS5:
+                apiRequest = parentActivity.getResources().getString(R.string.weatherForecastAPI);
+                break;
+            default:
+                apiRequest = parentActivity.getResources().getString(R.string.weatherNowAPI);
+        }
+
+        apiRequest = apiRequest + "id=" + cityID + "&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
+        //apiRequest = apiRequest + "id=498677&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
+
+        return apiRequest;
+    }
+
+    /**
+     *
+     * @param forecastPeriods
+     * @throws IOException
+     */
+    private void RequestWeatherUpdate(ForecastPeriods forecastPeriods) throws IOException {
         String stringURLToConnect;
         if (cityToCheck == null){
             return;
         }
 
-        stringURLToConnect = new ForecastProcessor(parentActivity).CreateAPIRequest(forecastPeriods, cityToCheck.getLocationID());
+        stringURLToConnect = CreateAPIRequest(forecastPeriods, cityToCheck.getLocationID());
 
         if (stringURLToConnect.trim().equals("")){
             new LogManager().captureLog(parentActivity.getApplicationContext(), "Empty connection. Nowhere to retrieve from");
@@ -173,15 +131,22 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
             new LogManager().captureLog(parentActivity.getApplicationContext(), "Server is not responding. Cannot update forecast");
             return;}
 
-        RetireveDataFromServer(connection, stringURLToConnect);
+        StringBuilder weatherRequestResult = RetireveDataFromServer(connection, stringURLToConnect);
+        String fileDirToStore = Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/";
+        String fullFileNameToSave = "testweather_" + cityToCheck.getLocationID() + ".xml";
+        new FileManager().SaveStringBuilderToFileByPath(fileDirToStore,fullFileNameToSave,weatherRequestResult);
 
-        }
+    }
 
 
     @Override
     protected Void doInBackground(Void... voids) {
         //UpdateCitiesDB();
-        RequestWeatherUpdate(ForecastPeriods.NOW);
+        try {
+            RequestWeatherUpdate(ForecastPeriods.NOW);
+        } catch (IOException e) {
+            new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
+        }
         return null;
     }
 }

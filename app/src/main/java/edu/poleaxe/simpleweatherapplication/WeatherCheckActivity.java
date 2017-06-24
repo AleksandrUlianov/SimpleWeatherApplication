@@ -13,15 +13,17 @@ import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
 import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
 import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogManager;
-import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogsTypesEnum;
+import edu.poleaxe.simpleweatherapplication.customenums.DialogsTypesEnum;
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionException;
 import edu.poleaxe.simpleweatherapplication.support.internetconnection.InternetConnectionManager;
-import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
+import edu.poleaxe.simpleweatherapplication.weatherapi.City;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.SuggestedCityEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.visualcomponents.WeatherEntryAdapter;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
+import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastProcessor;
 import edu.poleaxe.simpleweatherapplication.weatherapi.OpenWeatherMapAPI;
 import edu.poleaxe.simpleweatherapplication.support.SupportWeather;
+import edu.poleaxe.simpleweatherapplication.weatherapi.UpdateCityDBTask;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,14 +46,18 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     private City selectedCity;
 
-    private boolean openedFirstTime = true;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_weather_check);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        AutoCompleteTextView tvSuggestedCity = (AutoCompleteTextView) findViewById(R.id.tvSuggestedCity);
+
+        SuggestedCityEntryAdapter adapter = new SuggestedCityEntryAdapter(this, R.layout.suggested_city_line, dbManager);
+        tvSuggestedCity.setAdapter(adapter);
+        tvSuggestedCity.setOnItemClickListener(adapter);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -62,12 +68,9 @@ public class WeatherCheckActivity extends AppCompatActivity {
         }
         );
 
-        WeatherEntryAdapter weatherEntryAdapter = new WeatherEntryAdapter(this, forecastListToDisplay);
-        ListView forecastListView = (ListView) findViewById(R.id.lvForecastList);
-        forecastListView.setAdapter(weatherEntryAdapter);
-
         RadioGroup rg = (RadioGroup) findViewById(R.id.rgForecastPeriod);
         rg.check(R.id.rbPeriodDays1);
+
         rg.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -75,26 +78,21 @@ public class WeatherCheckActivity extends AppCompatActivity {
                 if (rb.isChecked()){
                     forecastPeriod = ForecastPeriods.valueOf(rb.getTag().toString());
                     ProcessCheckedRB();
-                    //UpdateWeather();
+                    UpdateWeather();
                 }
             }
         });
 
-        AutoCompleteTextView tvSuggestedCity = (AutoCompleteTextView) findViewById(R.id.tvSuggestedCity);
-
-        SuggestedCityEntryAdapter adapter = new SuggestedCityEntryAdapter(this, R.layout.suggested_city_line, dbManager);
-        tvSuggestedCity.setAdapter(adapter);
-        tvSuggestedCity.setOnItemClickListener(adapter);
+        WeatherEntryAdapter weatherEntryAdapter = new WeatherEntryAdapter(this, forecastListToDisplay);
+        ListView forecastListView = (ListView) findViewById(R.id.lvForecastList);
+        forecastListView.setAdapter(weatherEntryAdapter);
 
     }
 
     @Override
     protected void onStart(){
         super.onStart();
-        if (openedFirstTime) {
-            SetUpApplicationConditions();
-            openedFirstTime = false;
-        }
+        SetUpApplicationConditions();
     }
 
     /**
@@ -150,24 +148,26 @@ public class WeatherCheckActivity extends AppCompatActivity {
      */
     private void SetUpApplicationConditions(){
 
-        boolean settingsDBAvailable;
-            try {
-                settingsDBAvailable = dbManager.PrepareAvailableSettingsDB(this);
-            }
-            catch (IllegalAccessError|NullPointerException e){
-                dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Settings DB not available. Default settings will be used", this);
-                return;
-            }
+        boolean isDBAvailable = false;
+        try {
+            isDBAvailable = dbManager.PrepareDB(this);
+        }
+        catch (IllegalAccessError|NullPointerException e){
+            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Settings DB not available. Default settings will be used", this);
+            return;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-            if (!settingsDBAvailable){
-                dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Settings DB not available. Default settings will be used", this);
-            }
+        if (!isDBAvailable){
+            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Settings DB not available. Default settings will be used", this);
+        }
 
-            ApplySettingsFromDB();
 
-            openWeatherMapAPI.setContext(this);
-            openWeatherMapAPI.execute();
-
+        //todo cities download tracker
+        ApplySettingsFromDB();
+        UpdateCityDBTask updateCityDBTask = new UpdateCityDBTask();
+        updateCityDBTask.execute(this);
     }
 
     /**
@@ -194,19 +194,14 @@ public class WeatherCheckActivity extends AppCompatActivity {
      *
      */
     private void UpdateWeather(){
-        if (selectedCity != null) {
-            OpenWeatherMapAPI weatherAPI = new OpenWeatherMapAPI();
-            weatherAPI.setContext(this);
-            weatherAPI.setCityToCheck(selectedCity);
-            weatherAPI.execute();
+        if (selectedCity == null){
+            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "Please select a city",this);
+            return;
         }
 
-//        if (selectedCity != null){
-//            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, selectedCity.getLocationID(),this);
-//        }
-//        else {
-//            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "City hasn't been selected",this);
-//        }
+        ForecastProcessor forecastProcessor = new ForecastProcessor(this);
+        forecastListToDisplay = forecastProcessor.GetWeatherForecastForSelectedCity(forecastPeriod, selectedCity);
+
         //TODO
         //1. If there is cached data for the selected city
         //2. if no cached data - check connection

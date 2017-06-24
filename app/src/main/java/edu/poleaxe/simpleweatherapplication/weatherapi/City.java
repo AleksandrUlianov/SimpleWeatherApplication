@@ -1,4 +1,4 @@
-package edu.poleaxe.simpleweatherapplication.visualcomponents;
+package edu.poleaxe.simpleweatherapplication.weatherapi;
 
 /**
  * Created by Aleksandr Ulianov (poleaxe) on 20.06.2017.

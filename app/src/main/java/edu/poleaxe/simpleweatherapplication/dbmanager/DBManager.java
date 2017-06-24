@@ -5,8 +5,9 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
-import edu.poleaxe.simpleweatherapplication.visualcomponents.City;
+import edu.poleaxe.simpleweatherapplication.weatherapi.City;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
 
 import java.util.ArrayList;
@@ -29,15 +30,12 @@ public class DBManager {
      * method to retrieve a DB version from settings DB
      * @return int version of settings DB. could be 0 if DB is empty and needs to be created
      */
-    private int DBVersion(){
+    private int DBVersion() throws SQLException{
 
         String checkDBConfig = "Select value from Config where key = 'dbVersion'";
-        Cursor resultSet;
-        try{
-            resultSet = settingsDataBase.rawQueryWithFactory(null,checkDBConfig,null,null,null);
-        }
-        catch (SQLException e){
-            new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
+        Cursor resultSet = settingsDataBase.rawQueryWithFactory(null,checkDBConfig,null,null,null);
+
+        if (resultSet == null){
             return 0;
         }
 
@@ -56,8 +54,11 @@ public class DBManager {
      * opens database from existing file in storage.
      * in case DB not exists (file exists but empty) then creates empty DB according to the template
      */
-    private boolean PrepareSettingsDB(){
+    private boolean PrepareDefaultDB() throws Exception {
         settingsDataBase = SQLiteDatabase.openOrCreateDatabase(dbFullPath, null);
+        if (settingsDataBase == null){
+            throw new Exception("Unable to create database");
+        }
         return DBVersion() == 0 ? CreateEmptyDataBase() : true;
     }
 
@@ -65,17 +66,9 @@ public class DBManager {
      * creates a settings database according to the template with default values
      */
     private boolean CreateEmptyDataBase() {
-        if (settingsDataBase == null){
-            PrepareSettingsDB();
-        }
-
-        if (settingsDataBase == null){
-            new LogManager().captureLog(parentActivity.getApplicationContext(), "Unable to connect to settings Database");
-            return false;
-        }
 
         settingsDataBase.beginTransaction();
-        ArrayList<String> emptyDBCreationdump = getXMLAsArrayList();
+        ArrayList<String> emptyDBCreationdump = getDefaultDataBaseDump();
         try {
             for (String dumpLine : emptyDBCreationdump
                     ) {
@@ -104,7 +97,7 @@ public class DBManager {
      * prepares a dump for sql db creation according to the template
      * @return ArrayList of sql statements
      */
-    private ArrayList<String> getXMLAsArrayList() {
+    private ArrayList<String> getDefaultDataBaseDump() {
 
         ArrayList<String> listToReturn = new ArrayList<>();
         listToReturn.add("drop table if exists config;");
@@ -115,13 +108,13 @@ public class DBManager {
         listToReturn.add("insert into settings(key, value) values ('lastLocation', null);");
         listToReturn.add("insert into settings(key, value) values ('degreesType', 'CELSIUS');");
         listToReturn.add("insert into settings(key, value) values ('unitsType', 'METRIC');");
-        listToReturn.add("insert into settings(key, value) values ('period', 'NOW');");
+        listToReturn.add("insert into settings(key, value) values ('period', '" + ForecastPeriods.NOW.name().toLowerCase() + "');");
         listToReturn.add("drop table if exists PreviouslyBrowsedLocations;");
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
         listToReturn.add("drop table if exists CityList;");
         listToReturn.add("create table CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         listToReturn.add("drop table if exists cacheddata;");
-        listToReturn.add("create table cacheddata(locationID text not null unique, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
+        listToReturn.add("create table cacheddata(locationID text not null unique, forecastperiod text, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
                 "forecastPrecipitation text, forecastHumidity text, forecastUVIndex text, forecastTemperature text," +
                 "forecastPressure text, forecastVisibility text);");
         return listToReturn;
@@ -134,12 +127,12 @@ public class DBManager {
      * @throws IllegalAccessError in case there are no permissions to work with storages
      * @throws NullPointerException in case it was impossible to instantiate or create a file for DB
      */
-    public boolean PrepareAvailableSettingsDB(Activity parentActivity) throws IllegalAccessError, NullPointerException{
+    public boolean PrepareDB(Activity parentActivity) throws IllegalAccessError, Exception {
         this.parentActivity = parentActivity;
 
         fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, this.parentActivity, false);
 
-        return settingsDataBase == null ? PrepareSettingsDB() : true;
+        return settingsDataBase == null ? PrepareDefaultDB() : true;
     }
 
     /**
@@ -148,6 +141,7 @@ public class DBManager {
      * @return String value sof requested attribute
      */
     public String getSettingValue(String key){
+        //+used
         String getForecastPeriodQuery = "select value from settings where key = \"" + key + "\"";
 
         Cursor resultsSet = null;
@@ -173,6 +167,7 @@ public class DBManager {
      * @param settingsToSet Map pf keys and values of settings to update
      */
     public void updateAnySettings(Map<String, String> settingsToSet){
+    //+used
 
         for (Map.Entry<String, String> entry : settingsToSet.entrySet())
         {
@@ -186,7 +181,8 @@ public class DBManager {
      * @param value String value to set
      */
     private void UpdateSetting(String key, String value) {
-       String statementToSet = "update settings set value = \"" + value + "\" where key = \"" + key + "\";";
+       //+used
+        String statementToSet = "update settings set value = \"" + value + "\" where key = \"" + key + "\";";
        try {
            settingsDataBase.execSQL(statementToSet);
        }
@@ -198,7 +194,10 @@ public class DBManager {
     }
 
 
-
+    /**
+     *
+     * @param locationID
+     */
     public void addLocationToSearchHistory(String locationID){
         //TODO addLocationToSearchHistory
     }
@@ -235,7 +234,11 @@ public class DBManager {
         return searchHistoryList;
     }
 
-    private boolean checkExistanceOfCitiesBase(){
+    /**
+     *
+     * @return
+     */
+    public boolean checkExistanceOfCitiesBase(){
         Cursor resultSet;
 
         String stringToExecute = "select count(*) from CityList";
@@ -261,9 +264,11 @@ public class DBManager {
     }
 
 
+    /**
+     *
+     * @param citiesToAdd
+     */
     public void UpdateCityListDB(ArrayList<String> citiesToAdd){
-
-        if (checkExistanceOfCitiesBase()){return;}
 
         settingsDataBase.execSQL("create table if not exists CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         settingsDataBase.execSQL("delete from CityList;");
@@ -292,6 +297,26 @@ public class DBManager {
 
         return new City(resultsSet.getString(0), resultsSet.getString(1), resultsSet.getString(2), resultsSet.getString(3), resultsSet.getString(4));
 
+    }
+
+    /**
+     *
+     * @param resultSet
+     * @return
+     */
+    private ForecastInstance ForecastFromCursor(Cursor resultSet){
+        if (resultSet == null) {
+            return null;
+        }
+
+        return new ForecastInstance(resultSet.getString(0),
+                resultSet.getString(1),
+                resultSet.getString(2),
+                resultSet.getString(3),
+                resultSet.getString(4),
+                resultSet.getString(5),
+                resultSet.getString(6),
+                resultSet.getString(7));
     }
 
     /**
@@ -372,9 +397,50 @@ public class DBManager {
         return lastCity;
     }
 
-    public void CacheData(City cityToStore, ForecastInstance forecastInstance){
+    public long getLastUpdateTimeForCityForPeriod(ForecastPeriods forecastPeriods, City selectedCity){
+        long lastUpdateTime;
+
+        String stringToExecute = "select updatetime " +
+                "from cachedata " +
+                "where locationID = '" + selectedCity.getLocationID() + "' " +
+                "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "'" +
+                "order by desc";
+        Cursor resultSet = settingsDataBase.rawQuery(stringToExecute,null);
+        if (resultSet == null) {
+            return -1;
+        }
+
+        resultSet.moveToFirst();
+        lastUpdateTime = Long.getLong(resultSet.getString(0));
+        resultSet.close();
+        return lastUpdateTime;
+    }
+
+    /**
+     *
+      * @param selectedCity
+     * @param forecastPeriods
+     * @param forecastInstanceListToCache
+     */
+    public void CacheWeatherForecast(City selectedCity, ForecastPeriods forecastPeriods, ArrayList<ForecastInstance> forecastInstanceListToCache){
+        if (forecastInstanceListToCache == null){ return;}
+
+        for (ForecastInstance forecastInstance :
+                forecastInstanceListToCache) {
+            CacheOneForecastInstance(selectedCity, forecastInstance, forecastPeriods);
+        }
+    }
+
+    /**
+     *
+     * @param cityToStore
+     * @param forecastInstance
+     * @param forecastPeriods
+     */
+    private void CacheOneForecastInstance(City cityToStore, ForecastInstance forecastInstance, ForecastPeriods forecastPeriods){
         String stringToExecute = "insert " +
                 "into cacheddata(locationID" +
+                ", forecastperiod" +
                 ", updatetime" +
                 ", forecastDateTime" +
                 ", forecastPhenomena" +
@@ -387,6 +453,7 @@ public class DBManager {
                 ") " +
                 "values (" +
                 "'" + cityToStore.getLocationID() + "'" +
+                ",'" + forecastPeriods.name().toLowerCase() + "'" +
                 ",'" + String.valueOf(System.currentTimeMillis()) + "'" +
                 ",'" + forecastInstance.getForecastDateTime() + "'" +
                 ",'" + forecastInstance.getForecastPhenomena() + "'" +
@@ -404,19 +471,74 @@ public class DBManager {
 
     /**
      *
+     * @param forecastPeriods
      * @param cityToClean
      */
-    private void CleanUpCityCache(City cityToClean){
-        String stringToExecute = "delete from CityList where locationID = '" + cityToClean.getLocationID() + "'";
+    public void CleanUpCityCache(ForecastPeriods forecastPeriods,City cityToClean){
+        String stringToExecute = "delete " +
+                "from CityList " +
+                "where locationID = '" + cityToClean.getLocationID() + "' " +
+                "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' ";
         settingsDataBase.execSQL(stringToExecute);
     }
 
     /**
      *
      */
-    private void CleanUpCache() {
-        String stringToExecute = "delete from CityList where (" + String.valueOf(System.currentTimeMillis()) + " - updatetime) > 600000";
+    private void CleanUpAllCacheFor(ForecastPeriods forecastPeriods) {
+        String stringToExecute = "delete " +
+                "from CityList " +
+                "where forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' ";
+
+        switch (forecastPeriods){
+            case DAYS5:
+                stringToExecute = stringToExecute +
+                        "and (" + String.valueOf(System.currentTimeMillis()) + " - updatetime) > 18000000";
+                break;
+            default:
+                stringToExecute = stringToExecute+
+                        "and (" + String.valueOf(System.currentTimeMillis()) + " - updatetime) > 1800000";
+        }
+
         settingsDataBase.execSQL(stringToExecute);
         //TODO decide when it should be cleaned up
     }
+
+    /**
+     *
+     * @param selectedCity
+     * @param forecastPeriods
+     * @return
+     */
+    public ArrayList<ForecastInstance> getCachedForecast(City selectedCity, ForecastPeriods forecastPeriods){
+        ArrayList<ForecastInstance> forecastInstanceListToReturn = new ArrayList<>();
+        String stringToExecute = "select " +
+                " forecastDateTime" +
+                ", forecastPhenomena" +
+                ", forecastPrecipitation" +
+                ", forecastHumidity" +
+                ", forecastUVIndex" +
+                ", forecastTemperature" +
+                ", forecastPressure" +
+                ", forecastVisibility" +
+                ")" +
+                "from cacheddata " +
+                "where locationID = '" + selectedCity.getLocationID() + "' " +
+                "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' " +
+                "order by forecastDateTime asc";
+        Cursor resultSet = settingsDataBase.rawQuery(stringToExecute, null);
+        if (resultSet == null) {
+            return null;
+        }
+
+        resultSet.moveToFirst();
+        while (!resultSet.isAfterLast()){
+            forecastInstanceListToReturn.add(ForecastFromCursor(resultSet));
+            resultSet.moveToNext();
+        }
+
+        resultSet.close();
+        return forecastInstanceListToReturn;
+    }
+
 }

@@ -12,6 +12,7 @@ import android.widget.TextView;
 import edu.poleaxe.simpleweatherapplication.R;
 import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
+import edu.poleaxe.simpleweatherapplication.weatherapi.City;
 
 /**
  * Created by Aleksandr Ulianov (poleaxe) on 21.06.2017.
