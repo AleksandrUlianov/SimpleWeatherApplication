@@ -24,6 +24,7 @@ public class LogManager {
     }
 
     public void captureLog(Context context, String messageToLog){
+        if (context == null){return;}
         Log.d(getApplicationName(context), messageToLog);
 
     }

@@ -37,6 +37,9 @@ implements AdapterView.OnItemClickListener{
 
     @Override
     public Cursor runQueryOnBackgroundThread(CharSequence constraint) {
+        if (dbManager == null){
+            dbManager = ((WeatherCheckActivity) context).getDBManager();
+        }
         return dbManager.getCursorOverSuggestedCities((String) constraint);
     }
 

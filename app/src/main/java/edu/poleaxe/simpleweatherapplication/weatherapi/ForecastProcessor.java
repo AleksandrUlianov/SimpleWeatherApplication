@@ -2,113 +2,77 @@ package edu.poleaxe.simpleweatherapplication.weatherapi;
 
 import android.app.Activity;
 import android.os.Environment;
-import edu.poleaxe.simpleweatherapplication.R;
+import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
 import edu.poleaxe.simpleweatherapplication.dbmanager.FileManager;
 
-import java.io.File;
 import java.util.ArrayList;
 
 /**
  * Created by Aleksandr Ulianov (poleaxe) on 18.06.2017.
  */
-public class ForecastProcessor {
+public class ForecastProcessor implements CallBackInstance {
 
-    private Activity parentActivity;
+    private WeatherCheckActivity parentActivity;
+    private DBManager dbManager;
 
     public ForecastProcessor(Activity parentActivity) {
-        this.parentActivity = parentActivity;
+        this.parentActivity = (WeatherCheckActivity) parentActivity;
+        dbManager = new DBManager(parentActivity);
 
-    }
-
-    /**
-     * retrieve Forecast instances for selected period
-     * @param forecastPeriods
-     * @return ArrayList of Forecast instances
-     */
-    public ArrayList<ForecastInstance> RetrieveWeather(ForecastPeriods forecastPeriods){
-
-        ArrayList<ForecastInstance> forecastInstanceArrayList;
-
-        //TODO check last update and retrieve weather from API
-        XMLParser cachedWeatherXMLParser = new XMLParser(parentActivity);
-        forecastInstanceArrayList = cachedWeatherXMLParser.RetrieveWeatherCached(forecastPeriods,);
-
-        return forecastInstanceArrayList;
     }
 
     /**
      *
      * @param forecastPeriods
-     * @param checkOnly
-     * @param cityToCache
+     * @param selectedCity
      * @return
      */
-    private File CheckCachedData(ForecastPeriods forecastPeriods, boolean checkOnly, City cityToCache){
-        //1. Check if cached file exists. return if File if exists : null. according to forecastPeriods, checkAndCreate mode
-        //2. Create file if not exists
-        //* fileName get from xml resources
-        String weatherCachedFileName;
-        switch (forecastPeriods){
-            case DAYS5:
-                weatherCachedFileName = parentActivity.getResources().getString(R.string.weatherDAYS5file);
-                break;
-            default:
-                weatherCachedFileName = parentActivity.getResources().getString(R.string.weatherNOWfile);
-        }
-        String fullPathName = parentActivity.getCacheDir() + "//" + parentActivity.getResources().getString(R.string.cachedDataPath) +
-                cityToCache.getLocationID();
-
-        return (new FileManager()).CheckOrCreateFileByPath(fullPathName,weatherCachedFileName,parentActivity, checkOnly);
-    }
-
-    /**
-     *
-     * @param forecastPeriods
-     */
-    private void clearCachedData(ForecastPeriods forecastPeriods, City cityToCache){
-
-    }
-
-    /**
-     *
-     * @param forecastPeriods
-     * @param stringToAdd
-     * @return
-     */
-    public boolean appendCachedDataWithRecord(ForecastPeriods forecastPeriods, String stringToAdd, City cityToCache){
-        File fileToProcess = CheckCachedData(forecastPeriods, true, cityToCache);
-
-        return true;
-    }
-
-    public ArrayList<ForecastInstance> GetWeatherForecastForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity){
+    public void GetWeatherForecastForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity){
         //+used
-        ArrayList<ForecastInstance> forecastListToReturn = null;
-        DBManager dbManager = new DBManager();
 
         long lastUpdateTime = dbManager.getLastUpdateTimeForCityForPeriod(forecastPeriods, selectedCity);
-        //if no cached data then get update from serve
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime > (1800000)){
-            updateCache(forecastPeriods, selectedCity, dbManager);
+            updateCache(forecastPeriods,selectedCity);
         }
-
-        forecastListToReturn = dbManager.getCachedForecast(selectedCity,forecastPeriods);
-        return  forecastListToReturn;
+        else{
+            parentActivity.UpdateWeather(dbManager.getCachedForecast(selectedCity,forecastPeriods));
+        }
     }
 
-    private void updateCache(ForecastPeriods forecastPeriods, City selectedCity, DBManager dbManager) {
+    /**
+     *
+     * @param forecastPeriods
+     * @param selectedCity
+     */
+    private void updateCache(ForecastPeriods forecastPeriods, City selectedCity) {
+
+        /*
         dbManager.CleanUpCityCache(forecastPeriods, selectedCity);
         OpenWeatherMapAPI apiServis = new OpenWeatherMapAPI();
-        apiServis.setCityToCheck(selectedCity);
         apiServis.setContext(parentActivity);
+        apiServis.setCityToCheck(selectedCity);
+        apiServis.setPeriodToCheck(forecastPeriods);
         apiServis.execute();
-        //TODO how to check when AsyncTask finished its work?
+*/
+    }
+
+    /**
+     *
+     * @param forecastPeriods
+     * @param selectedCity
+     */
+    @Override
+    public void UpdateWeaterOnUIForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity){
+        String fileDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/";
+        String fullFileName = "testweather_" + selectedCity.getLocationID() + ".xml";
+
         ArrayList<ForecastInstance> weatherDataFromXML = new XMLParser(parentActivity).RetrieveWeatherCached(forecastPeriods,selectedCity);
         dbManager.CacheWeatherForecast(selectedCity, forecastPeriods, weatherDataFromXML);
+        new FileManager().RemoveTMPFile(fileDir, fullFileName);
 
-
+        parentActivity.UpdateWeather(dbManager.getCachedForecast(selectedCity,forecastPeriods));
     }
 }

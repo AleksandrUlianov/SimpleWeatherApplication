@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.support.CheckRuntimePermissions;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
+import edu.poleaxe.simpleweatherapplication.weatherapi.City;
 
 import java.io.*;
 
@@ -176,4 +177,21 @@ public class FileManager {
 
     }
 
+    /**
+     *
+     * @param fileDir
+     * @param fullFileName
+     */
+    public void RemoveTMPFile(String fileDir, String fullFileName) {
+
+        File file = new File(fileDir);
+        if (!file.exists()){ return;}
+        file = new File(fileDir + "//" + fullFileName);
+        if (!file.exists()){ return;}
+        if (!file.delete()){
+            if (parentActivity != null) {
+                new LogManager().captureLog(parentActivity, "File " + file.getAbsolutePath() + " could not be deleted");
+            }
+        }
+    }
 }

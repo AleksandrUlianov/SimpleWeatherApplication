@@ -18,7 +18,9 @@ import java.net.*;
 public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     private WeatherCheckActivity parentActivity;
+    public CallBackInstance callBackClass;
     private City cityToCheck;
+    private ForecastPeriods forecastPeriodToCheck;
 
     /**
      *
@@ -31,6 +33,10 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     public void setCityToCheck(City cityToCheck){
         this.cityToCheck = cityToCheck;
+    }
+
+    public void setPeriodToCheck(ForecastPeriods forecastPeriod){
+        this.forecastPeriodToCheck = forecastPeriod;
     }
 
     /**
@@ -148,5 +154,10 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
             new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        callBackClass.UpdateWeaterOnUIForSelectedCity(forecastPeriodToCheck, cityToCheck);
     }
 }

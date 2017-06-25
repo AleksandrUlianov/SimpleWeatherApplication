@@ -26,14 +26,35 @@ public class DBManager {
 
     private FileManager fileManager = new FileManager();
 
+    public DBManager(Activity parentActivity){
+        this.parentActivity = parentActivity;
+    }
+
     /**
      * method to retrieve a DB version from settings DB
      * @return int version of settings DB. could be 0 if DB is empty and needs to be created
      */
     private int DBVersion() throws SQLException{
 
-        String checkDBConfig = "Select value from Config where key = 'dbVersion'";
-        Cursor resultSet = settingsDataBase.rawQueryWithFactory(null,checkDBConfig,null,null,null);
+        String checkDBExistance = "select count(*) " +
+                "from sqlite_master " +
+                "where type='table' and name='config';";
+
+        Cursor resultSet = settingsDataBase.rawQueryWithFactory(null,checkDBExistance,null,null,null);
+
+        if (resultSet == null){
+            return 0;
+        }
+
+        resultSet.moveToFirst();
+        String dbExists = resultSet.getString(0);
+        resultSet.close();
+        if (Integer.valueOf(dbExists) == 0){
+            return 0;
+        }
+
+        String checkDBConfig = "select value from Config where key = 'dbVersion'";
+        resultSet = settingsDataBase.rawQueryWithFactory(null,checkDBConfig,null,null,null);
 
         if (resultSet == null){
             return 0;
@@ -111,8 +132,7 @@ public class DBManager {
         listToReturn.add("insert into settings(key, value) values ('period', '" + ForecastPeriods.NOW.name().toLowerCase() + "');");
         listToReturn.add("drop table if exists PreviouslyBrowsedLocations;");
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
-        listToReturn.add("drop table if exists CityList;");
-        listToReturn.add("create table CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
+        listToReturn.add("create table if not exists CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         listToReturn.add("drop table if exists cacheddata;");
         listToReturn.add("create table cacheddata(locationID text not null unique, forecastperiod text, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
                 "forecastPrecipitation text, forecastHumidity text, forecastUVIndex text, forecastTemperature text," +
@@ -122,15 +142,13 @@ public class DBManager {
 
     /**
      * method to prepare available database with settings and search history
-     * @param parentActivity Activity where from this method was initiated
      * @return boolean value is database available or not
      * @throws IllegalAccessError in case there are no permissions to work with storages
      * @throws NullPointerException in case it was impossible to instantiate or create a file for DB
      */
-    public boolean PrepareDB(Activity parentActivity) throws IllegalAccessError, Exception {
-        this.parentActivity = parentActivity;
+    public boolean PrepareDB() throws IllegalAccessError, Exception {
 
-        fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, this.parentActivity, false);
+        fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, parentActivity, false);
 
         return settingsDataBase == null ? PrepareDefaultDB() : true;
     }
@@ -187,9 +205,7 @@ public class DBManager {
            settingsDataBase.execSQL(statementToSet);
        }
        catch (SQLException e){
-           if (parentActivity != null) {
-               new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
-           }
+           new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
        }
     }
 
@@ -368,7 +384,7 @@ public class DBManager {
         String lastCityID = resultSet.getString(0);
         //resultSet.close();
 
-        if (lastCityID.equals("null")){return null;}
+        if (lastCityID == null || lastCityID.equals("null")){return null;}
 
         stringToExecute = "select \n" +
                 "locationID as _id,\n" +
@@ -401,16 +417,17 @@ public class DBManager {
         long lastUpdateTime;
 
         String stringToExecute = "select updatetime " +
-                "from cachedata " +
+                "from cacheddata " +
                 "where locationID = '" + selectedCity.getLocationID() + "' " +
                 "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "'" +
-                "order by desc";
+                "order by updatetime desc";
         Cursor resultSet = settingsDataBase.rawQuery(stringToExecute,null);
         if (resultSet == null) {
             return -1;
         }
 
         resultSet.moveToFirst();
+        if (resultSet.getCount() == 0){return -1;}
         lastUpdateTime = Long.getLong(resultSet.getString(0));
         resultSet.close();
         return lastUpdateTime;

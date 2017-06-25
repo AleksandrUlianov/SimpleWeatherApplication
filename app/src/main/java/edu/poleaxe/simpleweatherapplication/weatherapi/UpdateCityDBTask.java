@@ -3,8 +3,10 @@ package edu.poleaxe.simpleweatherapplication.weatherapi;
 import android.app.Activity;
 import android.os.AsyncTask;
 import edu.poleaxe.simpleweatherapplication.R;
+import edu.poleaxe.simpleweatherapplication.customenums.DialogsTypesEnum;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
+import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,15 +19,19 @@ import java.util.ArrayList;
 /**
  * Created by Aleksandr Ulianov (poleaxe) on 24.06.2017.
  */
-public class UpdateCityDBTask extends AsyncTask<Activity, Integer, Void> {
+public class UpdateCityDBTask extends AsyncTask<Void, Integer, Void> {
 
     private Activity parentActivity;
+
+    public UpdateCityDBTask(Activity parentActivity){
+        this.parentActivity = parentActivity;
+    }
 
     /**
      *
      */
     private void UpdateCitiesDB(){
-        DBManager dbManager = new DBManager();
+        DBManager dbManager = new DBManager(parentActivity);
         if (dbManager.checkExistanceOfCitiesBase()){
             return;
         }
@@ -80,12 +86,21 @@ public class UpdateCityDBTask extends AsyncTask<Activity, Integer, Void> {
 
 
     @Override
-    protected Void doInBackground(Activity... activities) {
-
-        parentActivity = activities[0];
+    protected Void doInBackground(Void... voids) {
 
         UpdateCitiesDB();
 
         return null;
+    }
+
+    @Override
+    protected void onPreExecute() {
+        new DialogManager().DisplayDialog(DialogsTypesEnum.TOAST, "Updating list of cities...", parentActivity);
+
+    }
+
+    @Override
+    protected void onPostExecute(Void aVoid) {
+        new DialogManager().DisplayDialog(DialogsTypesEnum.TOAST, "List of cities updated successfully", parentActivity);
     }
 }
