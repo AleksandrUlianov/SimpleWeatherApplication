@@ -18,9 +18,17 @@ import java.net.*;
 public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     private WeatherCheckActivity parentActivity;
-    public CallBackInstance callBackClass;
+    private CallBackInstance callBackClass;
     private City cityToCheck;
     private ForecastPeriods forecastPeriodToCheck;
+
+    /**
+     *
+     * @param callBackClass
+     */
+    public void setCallBackClass(CallBackInstance callBackClass) {
+        this.callBackClass = callBackClass;
+    }
 
     /**
      *
@@ -140,16 +148,17 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
         StringBuilder weatherRequestResult = RetireveDataFromServer(connection, stringURLToConnect);
         String fileDirToStore = Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/";
         String fullFileNameToSave = "testweather_" + cityToCheck.getLocationID() + ".xml";
-        new FileManager().SaveStringBuilderToFileByPath(fileDirToStore,fullFileNameToSave,weatherRequestResult);
+        FileManager fileManager = new FileManager();
+        fileManager.setParentActivity(parentActivity);
+        fileManager.SaveStringBuilderToFileByPath(fileDirToStore,fullFileNameToSave,weatherRequestResult);
 
     }
 
 
     @Override
     protected Void doInBackground(Void... voids) {
-        //UpdateCitiesDB();
         try {
-            RequestWeatherUpdate(ForecastPeriods.NOW);
+            RequestWeatherUpdate(forecastPeriodToCheck);
         } catch (IOException e) {
             new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
         }
@@ -160,4 +169,5 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
     protected void onPostExecute(Void aVoid) {
         callBackClass.UpdateWeaterOnUIForSelectedCity(forecastPeriodToCheck, cityToCheck);
     }
+
 }

@@ -132,7 +132,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
         try {
             if ((new InternetConnectionManager()).IsConnectionEstablished(this)){
-                dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "Network is active", this);
+               // dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "Network is active", this);
                 return true;
             }
             else {
@@ -140,7 +140,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
                 return false;
             }
         } catch (InternetConnectionException e) {
-            new DialogManager().DisplayDialog(DialogsTypesEnum.ALERT, e.getMessage(), this);
+            new DialogManager().DisplayDialog(DialogsTypesEnum.ALERT, "UI: " + e.getMessage(), this);
             return false;
         }
     }
@@ -209,7 +209,9 @@ public class WeatherCheckActivity extends AppCompatActivity {
      * @param forecastInstanceArrayList
      */
     public void UpdateWeather(ArrayList<ForecastInstance> forecastInstanceArrayList){
-        forecastListToDisplay = forecastInstanceArrayList;
+        forecastListToDisplay.clear();
+        forecastListToDisplay.addAll(forecastInstanceArrayList);
+        ((WeatherEntryAdapter) ((ListView) findViewById(R.id.lvForecastList)).getAdapter()).notifyDataSetChanged();
 
     }
 

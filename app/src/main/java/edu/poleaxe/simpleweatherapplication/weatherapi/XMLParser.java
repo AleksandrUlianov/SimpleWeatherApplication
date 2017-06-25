@@ -2,10 +2,9 @@ package edu.poleaxe.simpleweatherapplication.weatherapi;
 
 import android.app.Activity;
 import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 import android.os.Build;
 import android.os.Environment;
-import edu.poleaxe.simpleweatherapplication.R;
+import android.util.Xml;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.dbmanager.FileManager;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
@@ -25,7 +24,8 @@ import java.util.ArrayList;
 public class XMLParser {
 
         private static final String ns = null;
-        private XmlResourceParser xmlResourceParser;
+        //private XmlResourceParser xmlResourceParser;
+        private XmlPullParser xmlResourceParser = Xml.newPullParser();
         private Activity parentActivity;
 
     /**
@@ -38,8 +38,8 @@ public class XMLParser {
             }
             this.parentActivity = parentActivity;
             Resources res = parentActivity.getResources();
-            xmlResourceParser = res.getXml(R.xml.current_weather);
-        }
+            //xmlResourceParser = res.getXml(R.xml.current_weather);
+    }
 
     /**
      * retrieves data about weather current or forecast according to incoming parameters
@@ -55,11 +55,17 @@ public class XMLParser {
         Resources res = parentActivity.getResources();
 
         String toParse = new FileManager().PrepareXMLFileToParse(fileDir,fullFileName);
+
+        if (toParse.trim().equals("")) {
+            return forecastInstancesToReturn;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             try {
-                xmlResourceParser.setInput(new ByteArrayInputStream(toParse.getBytes(StandardCharsets.UTF_8)), String.valueOf(StandardCharsets.UTF_8));
+                ByteArrayInputStream testByteInputStream = new ByteArrayInputStream(toParse.getBytes(StandardCharsets.UTF_8));
+                xmlResourceParser.setInput(testByteInputStream, "UTF-8");
             } catch (XmlPullParserException e) {
-                e.printStackTrace();
+                new DialogManager().DisplayDialog(DialogsTypesEnum.ALERT,"XMLParser: " + e.getMessage(),parentActivity);
+                return null;
             }
         }
 
@@ -72,7 +78,7 @@ public class XMLParser {
         } catch (XmlPullParserException | IOException e) {
             new LogManager().captureLog(parentActivity, e.getMessage());
             //new DialogManager().DisplayDialog(DialogsTypesEnum.ALERT,"Unfortunately an internal error happened! Forecast could not be shown",parentActivity);
-            new DialogManager().DisplayDialog(DialogsTypesEnum.ALERT,e.getMessage(),parentActivity);
+            new DialogManager().DisplayDialog(DialogsTypesEnum.ALERT,"XMLParser: " + e.getMessage(),parentActivity);
             return null;
         }
 
@@ -88,7 +94,7 @@ public class XMLParser {
     private ArrayList<ForecastInstance> ProcessCurrentWeather() throws IOException, XmlPullParserException {
 
         ArrayList<ForecastInstance> forecastInstancesToReturn = new ArrayList<>();
-        xmlResourceParser.require(XmlPullParser.START_TAG,ns,"current");
+        //xmlResourceParser.require(XmlPullParser.START_TAG,ns,"current");
 
         String forecastDateTime = "N/A";
         String forecastPhenomena = "N/A";
@@ -201,23 +207,29 @@ public class XMLParser {
     public ArrayList<ForecastInstance> ProcessForecastWeatherCached() throws IOException, XmlPullParserException {
         ArrayList<ForecastInstance> forecastInstancesToReturn = new ArrayList<>();
 
-        xmlResourceParser.require(XmlPullParser.START_TAG,ns,"weather_data");
+        xmlResourceParser.require(XmlPullParser.START_TAG,ns,"location");
 
         boolean repeatGet = true;
 
         while (repeatGet){
             int eventType = xmlResourceParser.nextTag();
             String eventName = xmlResourceParser.getName();
-            if (eventType == XmlPullParser.END_TAG & eventName.equals("weather_data")){
+            if (eventType == XmlPullParser.END_TAG & eventName.equals("weatherdata")){
                 repeatGet = false;
                 continue;
             }
 
             if (eventType == XmlPullParser.START_TAG){
-                if (eventName.equals("time")){
-                    forecastInstancesToReturn.add(RertrieveOneForecastInstance());
-                }
+                switch (eventName){
+                    case "forecast" :
 
+                        break;
+                    case "time" :
+                        forecastInstancesToReturn.add(RertrieveOneForecastInstance());
+                        break;
+                    default:
+                        skip();
+                }
             }
         }
 
@@ -225,6 +237,7 @@ public class XMLParser {
     }
 
     private ForecastInstance RertrieveOneForecastInstance() throws IOException, XmlPullParserException {
+        //xmlResourceParser.next();
         xmlResourceParser.require(XmlPullParser.START_TAG,ns,"time");
 
         String forecastDateTime = "N/A";

@@ -3,6 +3,7 @@ package edu.poleaxe.simpleweatherapplication.dbmanager;
 import android.Manifest;
 import android.app.Activity;
 import android.os.Environment;
+import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.support.CheckRuntimePermissions;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 import edu.poleaxe.simpleweatherapplication.weatherapi.City;
@@ -15,6 +16,10 @@ import java.io.*;
 public class FileManager {
     private Activity parentActivity;
     private CheckRuntimePermissions checkRuntimePermissions =  new CheckRuntimePermissions();
+
+    public void setParentActivity(WeatherCheckActivity parentActivity){
+        this.parentActivity = parentActivity;
+    }
 
     /**
      * requests permission to work with storages.
@@ -83,9 +88,8 @@ public class FileManager {
      * @param parentActivity Activity where from method was called
      * @return File where DB will be stored. could be NULL in case it is impossible to instantiate a file because of different reasonss
      */
-    public File CheckOrCreateFileByPath(String filePath, String fileNameWithExtentios, Activity parentActivity, boolean checkOnly){
+    public File CheckOrCreateFileByPath(String filePath, String fileNameWithExtentios, boolean checkOnly){
 
-        this.parentActivity = parentActivity;
 
         if (!CheckForPermissionsToWorkWithFiles()){
             (new LogManager()).captureLog(parentActivity, "Permission to work with files on storage was not granted");
@@ -128,11 +132,12 @@ public class FileManager {
     public String PrepareXMLFileToParse(String filePath, String fileName){
         FileInputStream in = null;
         try {
-            in = new FileInputStream(filePath + "//" + fileName);
+            in = new FileInputStream(filePath + fileName);
             //in = new FileInputStream("" + Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/testweather_498677.xml");
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        if (in == null) {return "";}
         InputStreamReader isr = new InputStreamReader(in);
         BufferedReader inRd = new BufferedReader(isr);
 
@@ -166,7 +171,7 @@ public class FileManager {
      * @throws IOException
      */
     public void SaveStringBuilderToFileByPath(String fileDirPath, String fullFileName, StringBuilder stringBuilderToSave) throws IOException {
-        File file = CheckOrCreateFileByPath(fileDirPath, fullFileName,parentActivity,false);
+        File file = CheckOrCreateFileByPath(fileDirPath, fullFileName,false);
         FileOutputStream fileOutput;
         fileOutput = new FileOutputStream(file);
         OutputStreamWriter outputStreamWriter=new OutputStreamWriter(fileOutput);

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
+import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 import edu.poleaxe.simpleweatherapplication.weatherapi.City;
@@ -134,7 +135,7 @@ public class DBManager {
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
         listToReturn.add("create table if not exists CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         listToReturn.add("drop table if exists cacheddata;");
-        listToReturn.add("create table cacheddata(locationID text not null unique, forecastperiod text, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
+        listToReturn.add("create table cacheddata(locationID text not null, forecastperiod text, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
                 "forecastPrecipitation text, forecastHumidity text, forecastUVIndex text, forecastTemperature text," +
                 "forecastPressure text, forecastVisibility text);");
         return listToReturn;
@@ -148,7 +149,8 @@ public class DBManager {
      */
     public boolean PrepareDB() throws IllegalAccessError, Exception {
 
-        fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, parentActivity, false);
+        fileManager.setParentActivity((WeatherCheckActivity) parentActivity);
+        fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, false);
 
         return settingsDataBase == null ? PrepareDefaultDB() : true;
     }
@@ -422,13 +424,13 @@ public class DBManager {
                 "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "'" +
                 "order by updatetime desc";
         Cursor resultSet = settingsDataBase.rawQuery(stringToExecute,null);
-        if (resultSet == null) {
+        if (resultSet == null || resultSet.getCount() == 0) {
             return -1;
         }
 
         resultSet.moveToFirst();
-        if (resultSet.getCount() == 0){return -1;}
-        lastUpdateTime = Long.getLong(resultSet.getString(0));
+
+        lastUpdateTime =Long.parseLong(resultSet.getString(0));
         resultSet.close();
         return lastUpdateTime;
     }
@@ -493,7 +495,7 @@ public class DBManager {
      */
     public void CleanUpCityCache(ForecastPeriods forecastPeriods,City cityToClean){
         String stringToExecute = "delete " +
-                "from CityList " +
+                "from cacheddata " +
                 "where locationID = '" + cityToClean.getLocationID() + "' " +
                 "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' ";
         settingsDataBase.execSQL(stringToExecute);
@@ -504,7 +506,7 @@ public class DBManager {
      */
     private void CleanUpAllCacheFor(ForecastPeriods forecastPeriods) {
         String stringToExecute = "delete " +
-                "from CityList " +
+                "from cacheddata " +
                 "where forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' ";
 
         switch (forecastPeriods){
@@ -537,8 +539,7 @@ public class DBManager {
                 ", forecastUVIndex" +
                 ", forecastTemperature" +
                 ", forecastPressure" +
-                ", forecastVisibility" +
-                ")" +
+                ", forecastVisibility " +
                 "from cacheddata " +
                 "where locationID = '" + selectedCity.getLocationID() + "' " +
                 "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' " +

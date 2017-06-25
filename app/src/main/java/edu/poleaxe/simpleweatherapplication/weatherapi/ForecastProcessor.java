@@ -49,14 +49,17 @@ public class ForecastProcessor implements CallBackInstance {
      */
     private void updateCache(ForecastPeriods forecastPeriods, City selectedCity) {
 
-        /*
+
         dbManager.CleanUpCityCache(forecastPeriods, selectedCity);
+
         OpenWeatherMapAPI apiServis = new OpenWeatherMapAPI();
         apiServis.setContext(parentActivity);
         apiServis.setCityToCheck(selectedCity);
         apiServis.setPeriodToCheck(forecastPeriods);
+        apiServis.setCallBackClass(this);
         apiServis.execute();
-*/
+
+        //UpdateWeaterOnUIForSelectedCity(forecastPeriods, selectedCity);
     }
 
     /**
