@@ -85,7 +85,6 @@ public class FileManager {
      * method to check if file with DB is available. In case there is no file - create new one to store settings DB
      * @param filePath String full path to directory where the DB file should be stored
      * @param fileNameWithExtentios String file name of the DB
-     * @param parentActivity Activity where from method was called
      * @return File where DB will be stored. could be NULL in case it is impossible to instantiate a file because of different reasonss
      */
     public File CheckOrCreateFileByPath(String filePath, String fileNameWithExtentios, boolean checkOnly){

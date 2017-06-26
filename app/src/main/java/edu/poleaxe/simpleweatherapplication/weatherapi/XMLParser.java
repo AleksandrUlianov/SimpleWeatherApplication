@@ -21,7 +21,7 @@ import java.util.ArrayList;
 /**class to process XML retrieved from weather forecast provider and create a set of forecast instances
  * Created by Aleksandr Ulianov (poleaxe) on 18.06.2017.
  */
-public class XMLParser {
+class XMLParser {
 
         private static final String ns = null;
         //private XmlResourceParser xmlResourceParser;
@@ -148,32 +148,60 @@ public class XMLParser {
         return forecastInstancesToReturn;
     }
 
+    /**
+     *
+     * @return
+     */
     private String processVisibility() {
         return "" + xmlResourceParser.getAttributeValue(ns, "value");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processPressure() {
         return "" + xmlResourceParser.getAttributeValue(ns, "value") + " " + xmlResourceParser.getAttributeValue(ns, "unit");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processPrecipitation() {
         return "" + xmlResourceParser.getAttributeValue(ns, "mode");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processPhenomena() {
         return "" + xmlResourceParser.getAttributeValue(ns, "name");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processDateTime() {
         return "" + xmlResourceParser.getAttributeValue(ns, "value");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processHumidity() {
         return "" + xmlResourceParser.getAttributeValue(ns, "value") + " " + xmlResourceParser.getAttributeValue(ns, "unit");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processTemperature() {
-        String valueToReturn = "";
+        String valueToReturn;
         String value = xmlResourceParser.getAttributeValue(ns, "value");
         String unit = xmlResourceParser.getAttributeValue(ns, "unit");
         valueToReturn = "" + value + " " + (unit.equals("fahrenheit") ? "F" : "C");
@@ -181,11 +209,11 @@ public class XMLParser {
         return valueToReturn;
     }
 
-    private void processCity(){
-
-
-    }
-
+    /**
+     *
+     * @throws XmlPullParserException
+     * @throws IOException
+     */
     private void skip() throws XmlPullParserException, IOException {
         if (xmlResourceParser.getEventType() != XmlPullParser.START_TAG) {
             throw new IllegalStateException();
@@ -236,11 +264,17 @@ public class XMLParser {
         return forecastInstancesToReturn;
     }
 
+    /**
+     *
+     * @return
+     * @throws IOException
+     * @throws XmlPullParserException
+     */
     private ForecastInstance RertrieveOneForecastInstance() throws IOException, XmlPullParserException {
         //xmlResourceParser.next();
         xmlResourceParser.require(XmlPullParser.START_TAG,ns,"time");
 
-        String forecastDateTime = "N/A";
+        String forecastDateTime;
         String forecastPhenomena = "N/A";
         String forecastPrecipitation = "N/A";
         String forecastHumidity = "N/A";
@@ -289,14 +323,26 @@ public class XMLParser {
                 forecastHumidity, forecastUVIndex, forecastTemperature, forecastPressure, forecastVisibility);
     }
 
+    /**
+     *
+     * @return
+     */
     private String processPrecipitationForecast() {
         return "" + xmlResourceParser.getAttributeValue(ns, "value");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processPhenomenaForecast() {
         return "" + xmlResourceParser.getAttributeValue(ns, "name");
     }
 
+    /**
+     *
+     * @return
+     */
     private String processDateTimeForecast() {
         return "From: " + xmlResourceParser.getAttributeValue(ns, "from") + " to: " + xmlResourceParser.getAttributeValue(ns, "to");
     }

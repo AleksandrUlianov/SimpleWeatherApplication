@@ -502,27 +502,6 @@ public class DBManager {
     }
 
     /**
-     *method to clean cached data for all cities
-     */
-    private void CleanUpAllCacheFor(ForecastPeriods forecastPeriods) {
-        String stringToExecute = "delete " +
-                "from cacheddata " +
-                "where forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' ";
-
-        switch (forecastPeriods){
-            case DAYS5:
-                stringToExecute = stringToExecute +
-                        "and (" + String.valueOf(System.currentTimeMillis()) + " - updatetime) > 18000000";
-                break;
-            default:
-                stringToExecute = stringToExecute+
-                        "and (" + String.valueOf(System.currentTimeMillis()) + " - updatetime) > 1800000";
-        }
-
-        settingsDataBase.execSQL(stringToExecute);
-    }
-
-    /**
      *method to get cached data for
      * @param selectedCity of type City
      * @param forecastPeriods enum of available forecast periods
