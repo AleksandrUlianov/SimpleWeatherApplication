@@ -1,11 +1,17 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:app="http://schemas.android.com/apk/res-auto"
       xmlns:tools="http://schemas.android.com/tools"
+      app:showAsAction = "always"
       tools:context="edu.poleaxe.simpleweatherapplication.WeatherCheckActivity">
 
-    <item android:id="@+id/action_settings"
-          android:title="@string/action_settings"
-          android:orderInCategory="100"
-          app:showAsAction="never"/>
+
+    <item android:id="@+id/select"
+          android:title="select"
+          app:showAsAction = "always"
+          />
+    <item android:id="@+id/add"
+          android:title="add"
+          app:showAsAction = "always"
+          />
 
 </menu>

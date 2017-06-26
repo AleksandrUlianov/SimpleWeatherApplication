@@ -111,14 +111,17 @@ public class WeatherCheckActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_weather_check, menu);
+        //getMenuInflater().inflate(R.menu.menu_weather_check, menu);
+        getLayoutInflater().inflate(R.layout.settings_menu,null);
+        //MenuItem item = menu.findItem(R.id.menu_switches);
+        //item.setActionView(R.layout.settings_menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.select) {
             return true;
         }
         return super.onOptionsItemSelected(item);

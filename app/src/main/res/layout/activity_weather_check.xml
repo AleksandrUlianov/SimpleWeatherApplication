@@ -11,6 +11,7 @@
     <android.support.design.widget.AppBarLayout
             android:id="@+id/app_bar"
             android:fitsSystemWindows="true"
+            android:layout_marginTop="10dp"
             android:layout_height="@dimen/app_bar_height"
             android:layout_width="match_parent"
             android:theme="@style/AppTheme.AppBarOverlay">
@@ -31,36 +32,41 @@
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
-            <AutoCompleteTextView
-                    android:id = "@+id/tvSuggestedCity"
-                    android:layout_height="wrap_content"
-                    android:layout_width="300dp"
-                    app:layout_collapseMode="pin"
-                    app:theme="@style/Widget.AppCompat.AutoCompleteTextView"
-                    android:completionThreshold="2"
 
-            />
 
             <RadioGroup
                     android:orientation="horizontal"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="150dp"
-                    android:id="@+id/rgForecastPeriod">
+                    android:id="@+id/rgForecastPeriod"
+            >
 
                 <RadioButton
                         android:text="now"
                         android:textSize="6pt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/rbPeriodDays1" android:layout_weight="1"
-                        android:tag="NOW"/>
+                        android:tag="NOW"
+                />
                 <RadioButton
                         android:text="5 days"
                         android:textSize="6pt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/rbPeriodDays5" android:layout_weight="1"
-                        android:tag="DAYS5"/>
+                        android:tag="DAYS5"
+                />
             </RadioGroup>
+            <AutoCompleteTextView
+                    android:id = "@+id/tvSuggestedCity"
+                    android:layout_height="wrap_content"
+                    android:layout_width="200dp"
+                    app:theme="@style/Widget.AppCompat.AutoCompleteTextView"
+                    android:completionThreshold="2"
+                    app:layout_anchor="@id/toolbar_layout"
+                    app:layout_anchorGravity="top|left"
+
+            />
         </android.support.design.widget.CollapsingToolbarLayout>
 
     </android.support.design.widget.AppBarLayout>
@@ -71,6 +77,8 @@
             android:layout_height="match_parent"
             android:layout_margin="@dimen/fab_margin"
             android:layout_marginTop="400dp"
+            app:layout_anchorGravity="bottom|end"
+            app:layout_anchor="@id/app_bar"
 
 
             app:srcCompat="@android:drawable/ic_menu_rotate"
