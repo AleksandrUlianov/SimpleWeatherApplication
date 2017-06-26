@@ -75,8 +75,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
                 if (rb.isChecked()){
                     forecastPeriod = ForecastPeriods.valueOf(rb.getTag().toString());
                     ProcessCheckedRB();
-                   //TODO return back weather update on radiobutton switch
-                    // InitiateUpdateWeather();
+                    InitiateUpdateWeather();
                 }
             }
         });
@@ -134,7 +133,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     /**
-     *
+     *method to process selected radiobutton with forecast period
      */
     private void ProcessCheckedRB() {
 
@@ -144,6 +143,10 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * dbManager getter. needed to proper support of background working threads
+     * @return
+     */
     public DBManager getDBManager(){
         return dbManager;
     }
@@ -156,22 +159,17 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-//        if (id == R.id.select) {
-//            return true;
-//        }
         return super.onOptionsItemSelected(item);
     }
 
     /**
-     *
-     * @return
+     *method to check if there is any kind of Internet connection established
+     * @return boolean if connection is established
      */
-    boolean CheckConnections(){
+    private boolean CheckConnections(){
 
         try {
             if ((new InternetConnectionManager()).IsConnectionEstablished(this)){
-               // dialogManager.DisplayDialog(DialogsTypesEnum.TOAST, "Network is active", this);
                 return true;
             }
             else {
@@ -185,7 +183,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     /**
-     *
+     *method to prepare supporting classes for the application. such as correct database, files to store cached data
      */
     private void SetUpApplicationConditions(){
 
@@ -210,7 +208,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     /**
-     *
+     *method to apply local settings  variables according to stored preferences
      */
     private void ApplySettingsFromDB() {
         String parameterValue;
@@ -236,7 +234,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     /**
-     *
+     *method to initiate process of retrieving information about forecast. Method will start separate threads to work with SQL DB and retrieve data from API
      */
     private void InitiateUpdateWeather(){
 
@@ -254,8 +252,8 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     /**
-     *
-     * @param forecastInstanceArrayList
+     *method to update array list with forecast instances
+     * @param forecastInstanceArrayList ArrayList to be put into list of displayed forecast instances
      */
     public void UpdateWeather(ArrayList<ForecastInstance> forecastInstanceArrayList){
         forecastListToDisplay.clear();
@@ -265,8 +263,8 @@ public class WeatherCheckActivity extends AppCompatActivity {
     }
 
     /**
-     *
-     * @param selectedCity
+     *method to define selected city after clicking on the suggested item in Autosuggestion dropdown
+     * @param selectedCity City type parameter. city that was selected from autosuggestion dropdown
      */
     public void setSelectedCity(City selectedCity) {
         this.selectedCity = selectedCity;

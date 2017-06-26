@@ -214,7 +214,7 @@ public class DBManager {
 
     /**
      *
-     * @param locationID
+     * @param locationID of type String to store as last searched
      */
     public void addLocationToSearchHistory(String locationID){
         //TODO addLocationToSearchHistory
@@ -254,7 +254,7 @@ public class DBManager {
 
     /**
      *
-     * @return
+     * @return boolean if database with the list of cities exists
      */
     public boolean checkExistanceOfCitiesBase(){
         Cursor resultSet;
@@ -284,7 +284,7 @@ public class DBManager {
 
     /**
      *
-     * @param citiesToAdd
+     * @param citiesToAdd of type ArrayList. List of cities to be added to the database
      */
     public void UpdateCityListDB(ArrayList<String> citiesToAdd){
 
@@ -305,8 +305,8 @@ public class DBManager {
 
     /**
      *
-     * @param resultsSet
-     * @return
+     * @param resultsSet selection of cities that matches with entered data to be selected by end user
+     * @return city that is in the current cursor position
      */
     public City cityToFromCursor(Cursor resultsSet){
         if (resultsSet == null) {
@@ -319,8 +319,8 @@ public class DBManager {
 
     /**
      *
-     * @param resultSet
-     * @return
+     * @param resultSet selection of forecasts from dcached database
+     * @return one instance of forecast to display
      */
     private ForecastInstance ForecastFromCursor(Cursor resultSet){
         if (resultSet == null) {
@@ -339,8 +339,8 @@ public class DBManager {
 
     /**
      *
-     * @param enteredPartOfName
-     * @return
+     * @param enteredPartOfName String parameter that city name should match
+     * @return cursor as a selection of cities that matches entered parameter
      */
     public Cursor getCursorOverSuggestedCities(String enteredPartOfName){
         Cursor resultsSet;
@@ -364,7 +364,7 @@ public class DBManager {
 
     /**
      *
-     * @return
+     * @return a City of type City that had been seen during the last application session
      */
     public City getLastCity() {
         City lastCity;
@@ -436,10 +436,10 @@ public class DBManager {
     }
 
     /**
-     *
-      * @param selectedCity
-     * @param forecastPeriods
-     * @param forecastInstanceListToCache
+     *method to cache in database data obout forecast for selected city
+      * @param selectedCity of type City
+     * @param forecastPeriods enum ForecastPeriod
+     * @param forecastInstanceListToCache list of instances to cache
      */
     public void CacheWeatherForecast(City selectedCity, ForecastPeriods forecastPeriods, ArrayList<ForecastInstance> forecastInstanceListToCache){
         if (forecastInstanceListToCache == null){ return;}
@@ -451,10 +451,10 @@ public class DBManager {
     }
 
     /**
-     *
-     * @param cityToStore
-     * @param forecastInstance
-     * @param forecastPeriods
+     *method to put one forecast instance in cache DB
+     * @param cityToStore of type City
+     * @param forecastInstance of type Forecast instance to be stored
+     * @param forecastPeriods enum of forecast period to be stored
      */
     private void CacheOneForecastInstance(City cityToStore, ForecastInstance forecastInstance, ForecastPeriods forecastPeriods){
         String stringToExecute = "insert " +
@@ -489,9 +489,9 @@ public class DBManager {
     }
 
     /**
-     *
-     * @param forecastPeriods
-     * @param cityToClean
+     *method that cleans up cache for one selected cit for defined period of forecast
+     * @param forecastPeriods enum of period to be cleaned
+     * @param cityToClean of type City to be cleaned
      */
     public void CleanUpCityCache(ForecastPeriods forecastPeriods,City cityToClean){
         String stringToExecute = "delete " +
@@ -502,7 +502,7 @@ public class DBManager {
     }
 
     /**
-     *
+     *method to clean cached data for all cities
      */
     private void CleanUpAllCacheFor(ForecastPeriods forecastPeriods) {
         String stringToExecute = "delete " +
@@ -520,14 +520,13 @@ public class DBManager {
         }
 
         settingsDataBase.execSQL(stringToExecute);
-        //TODO decide when it should be cleaned up
     }
 
     /**
-     *
-     * @param selectedCity
-     * @param forecastPeriods
-     * @return
+     *method to get cached data for
+     * @param selectedCity of type City
+     * @param forecastPeriods enum of available forecast periods
+     * @return Array list of forecast instances to be displayed
      */
     public ArrayList<ForecastInstance> getCachedForecast(City selectedCity, ForecastPeriods forecastPeriods){
         ArrayList<ForecastInstance> forecastInstanceListToReturn = new ArrayList<>();

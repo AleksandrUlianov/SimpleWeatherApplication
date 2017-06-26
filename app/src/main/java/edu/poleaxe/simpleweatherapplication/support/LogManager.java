@@ -5,20 +5,20 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.util.Log;
 
-/**
+/**class to capture any log that will be needed
  * Created by Aleksandr Ulianov (poleaxe) on 14.06.2017.
  */
 public class LogManager {
 
-    private PackageManager packageManager = null;
     private ApplicationInfo applicationInfo = null;
 
     private String getApplicationName(Context context) {
-        packageManager = context.getPackageManager();
+        PackageManager packageManager = context.getPackageManager();
         try {
             applicationInfo = packageManager.getApplicationInfo(context.getApplicationInfo().packageName, 0);
         } catch (final PackageManager.NameNotFoundException e) {
-            //TODO catch error
+            //not a really good solution. idea was to use ACRA library to inform developer about an error happened
+            e.printStackTrace();
         }
         return (String) (applicationInfo != null ? packageManager.getApplicationLabel(applicationInfo) : "Unknown");
     }
