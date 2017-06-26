@@ -28,10 +28,45 @@
                     android:id="@+id/toolbar"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_width="match_parent"
-                    android:textAlignment="center"
                     app:layout_collapseMode="pin"
                     app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
+            <RelativeLayout
+                    android:id="@+id/RelativeLayoutSettings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_anchor="@id/app_bar"
+                    app:layout_anchorGravity="top|left">
+                <AutoCompleteTextView
+                        android:id = "@+id/tvSuggestedCity"
+                        android:layout_height="wrap_content"
+                        android:layout_width="200dp"
+                        android:layout_alignParentTop="true"
+                        android:layout_alignParentLeft="true"
+                        app:theme="@style/Widget.AppCompat.AutoCompleteTextView"
+                        android:completionThreshold="2"
+                />
+
+                <android.support.v7.widget.SwitchCompat
+                        android:id="@+id/switchMUnits"
+                        android:text="m/in "
+                        android:textAlignment="viewEnd"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                />
+                <android.support.v7.widget.SwitchCompat
+                        android:id="@+id/switchTUnits"
+                        android:text="C/F "
+                        android:textAlignment="viewEnd"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/switchMUnits"
+                        android:layout_alignParentEnd="true"
+                />
+
+
+            </RelativeLayout>
 
 
             <RadioGroup
@@ -57,16 +92,7 @@
                         android:tag="DAYS5"
                 />
             </RadioGroup>
-            <AutoCompleteTextView
-                    android:id = "@+id/tvSuggestedCity"
-                    android:layout_height="wrap_content"
-                    android:layout_width="200dp"
-                    app:theme="@style/Widget.AppCompat.AutoCompleteTextView"
-                    android:completionThreshold="2"
-                    app:layout_anchor="@id/toolbar_layout"
-                    app:layout_anchorGravity="top|left"
 
-            />
         </android.support.design.widget.CollapsingToolbarLayout>
 
     </android.support.design.widget.AppBarLayout>
@@ -76,11 +102,8 @@
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_margin="@dimen/fab_margin"
-            android:layout_marginTop="400dp"
             app:layout_anchorGravity="bottom|end"
             app:layout_anchor="@id/app_bar"
-
-
             app:srcCompat="@android:drawable/ic_menu_rotate"
     />
 

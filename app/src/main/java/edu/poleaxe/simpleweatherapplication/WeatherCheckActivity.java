@@ -3,6 +3,7 @@ package edu.poleaxe.simpleweatherapplication;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SwitchCompat;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -84,6 +85,45 @@ public class WeatherCheckActivity extends AppCompatActivity {
         ListView forecastListView = (ListView) findViewById(R.id.lvForecastList);
         forecastListView.setAdapter(weatherEntryAdapter);
 
+        SwitchCompat temperatureSwitch = (SwitchCompat) findViewById(R.id.switchTUnits);
+        SwitchCompat measurementSwitch = (SwitchCompat) findViewById(R.id.switchMUnits);
+
+        temperatureSwitch.setChecked(false);
+        measurementSwitch.setChecked(false);
+
+        temperatureSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                Map<String, String> settingToUpdate = new HashMap<>();
+
+                if (v.isSelected()){
+                    temperatureDegrees = TemperatureDegrees.CELSIUS;
+                }
+                else {
+                    temperatureDegrees = TemperatureDegrees.FARENHEIT;
+                }
+                settingToUpdate.put("degreesType",temperatureDegrees.name());
+                dbManager.updateAnySettings(settingToUpdate);
+            }
+        });
+
+        measurementSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Map<String, String> settingToUpdate = new HashMap<>();
+                if (v.isSelected()){
+                    unitMeasurements = UnitMeasurements.IMPERIAL;
+
+                }
+                else {
+                    unitMeasurements = UnitMeasurements.METRIC;
+                }
+                settingToUpdate.put("unitsType",unitMeasurements.name());
+                dbManager.updateAnySettings(settingToUpdate);
+            }
+        });
+
     }
 
     @Override
@@ -110,20 +150,16 @@ public class WeatherCheckActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        //getMenuInflater().inflate(R.menu.menu_weather_check, menu);
         getLayoutInflater().inflate(R.layout.settings_menu,null);
-        //MenuItem item = menu.findItem(R.id.menu_switches);
-        //item.setActionView(R.layout.settings_menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.select) {
-            return true;
-        }
+//        if (id == R.id.select) {
+//            return true;
+//        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -180,8 +216,18 @@ public class WeatherCheckActivity extends AppCompatActivity {
         String parameterValue;
         parameterValue      = dbManager.getSettingValue("degreesType");
         temperatureDegrees  = parameterValue == null ? temperatureDegrees : TemperatureDegrees.valueOf(parameterValue);
+        switch (temperatureDegrees){
+            case FARENHEIT: ((SwitchCompat) findViewById(R.id.switchTUnits)).setChecked(true); break;
+            default:
+                ((SwitchCompat) findViewById(R.id.switchTUnits)).setChecked(false);
+        }
         parameterValue      = dbManager.getSettingValue("unitsType");
         unitMeasurements    = parameterValue == null ? unitMeasurements : UnitMeasurements.valueOf(parameterValue);
+        switch (unitMeasurements){
+            case IMPERIAL:((SwitchCompat) findViewById(R.id.switchMUnits)).setChecked(true); break;
+            default:
+                ((SwitchCompat) findViewById(R.id.switchMUnits)).setChecked(false); break;
+        }
         parameterValue      = dbManager.getSettingValue("period");
         forecastPeriod      = parameterValue == null ? forecastPeriod : ForecastPeriods.valueOf(parameterValue.toUpperCase());
         selectedCity        = dbManager.getLastCity();
