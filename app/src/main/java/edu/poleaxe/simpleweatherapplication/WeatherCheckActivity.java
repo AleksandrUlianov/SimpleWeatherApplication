@@ -212,12 +212,16 @@ public class WeatherCheckActivity extends AppCompatActivity {
         }
 
         if (!isDBAvailable){
-            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"Settings DB not available. Default settings will be used", this);
+            dialogManager.DisplayDialog(DialogsTypesEnum.TOAST,"No permissions to work with data storage", this);
+            this.finish();
+        }
+        else {
+            ApplySettingsFromDB();
+            UpdateCityDBTask updateCityDBTask = new UpdateCityDBTask(this);
+            updateCityDBTask.execute();
         }
 
-        ApplySettingsFromDB();
-        UpdateCityDBTask updateCityDBTask = new UpdateCityDBTask(this);
-        updateCityDBTask.execute();
+
     }
 
     /**

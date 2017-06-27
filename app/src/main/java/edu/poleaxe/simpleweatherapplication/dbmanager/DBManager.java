@@ -12,6 +12,7 @@ import edu.poleaxe.simpleweatherapplication.support.LogManager;
 import edu.poleaxe.simpleweatherapplication.weatherapi.City;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -151,7 +152,9 @@ public class DBManager {
     public boolean PrepareDB() throws IllegalAccessError, Exception {
 
         fileManager.setParentActivity((WeatherCheckActivity) parentActivity);
-        fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, false);
+        File dbFile = fileManager.CheckOrCreateFileByPath(dbPath, dbFullName, false);
+
+        if(dbFile == null) {return false;}
 
         return settingsDataBase == null ? PrepareDefaultDB() : true;
     }

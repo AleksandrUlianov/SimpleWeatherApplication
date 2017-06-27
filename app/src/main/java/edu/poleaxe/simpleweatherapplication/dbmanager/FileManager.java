@@ -4,8 +4,10 @@ import android.Manifest;
 import android.app.Activity;
 import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
+import edu.poleaxe.simpleweatherapplication.customenums.DialogsTypesEnum;
 import edu.poleaxe.simpleweatherapplication.support.CheckRuntimePermissions;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
+import edu.poleaxe.simpleweatherapplication.support.customdialogmanager.DialogManager;
 import edu.poleaxe.simpleweatherapplication.weatherapi.City;
 
 import java.io.*;
@@ -42,12 +44,13 @@ public class FileManager {
         checkRuntimePermissions.SetParametersToRun(parentActivity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
         if (!checkRuntimePermissions.CheckForPermission()){
-            checkRuntimePermissions.execute();
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                (new LogManager()).captureLog(parentActivity, e.getMessage());
-            }
+            checkRuntimePermissions.RequestPermisstion();
+            //checkRuntimePermissions.execute();
+//            try {
+//                Thread.sleep(10000);
+//            } catch (InterruptedException e) {
+//                (new LogManager()).captureLog(parentActivity, e.getMessage());
+//            }
         }
 
         return checkRuntimePermissions.CheckForPermission();
@@ -92,6 +95,7 @@ public class FileManager {
 
         if (!CheckForPermissionsToWorkWithFiles()){
             (new LogManager()).captureLog(parentActivity, "Permission to work with files on storage was not granted");
+            new DialogManager().DisplayDialog(DialogsTypesEnum.ALERT, "Permission to work with files on storage was not granted",parentActivity);
             return null;
         }
 

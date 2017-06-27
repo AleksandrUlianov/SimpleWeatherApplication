@@ -25,7 +25,7 @@ public class CheckRuntimePermissions extends AsyncTask<Object[], Void, Void> {
                 new String[]{permissionToCheck},1);
     }
 
-    private void RequestPermisstion(){
+    public void RequestPermisstion(){
             (new LogManager()).captureLog(activityToCheck.getApplicationContext(), "permission: " + permissionToCheck + " : NOT granted!");
             // Should we show an explanation?
             if (ActivityCompat.shouldShowRequestPermissionRationale(activityToCheck,
