@@ -172,14 +172,11 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     @Override
     protected void onPostExecute(Void aVoid) {
-        callBackClass.UpdateWeaterOnUIForSelectedCity(forecastPeriodToCheck, cityToCheck);
+        callBackClass.UpdateWeaterOnUIForSelectedCity(forecastPeriodToCheck, cityToCheck, unitMeasurements);
     }
 
     public void setUnitMeasurements(UnitMeasurements unitMeasurements) {
         this.unitMeasurements = unitMeasurements;
     }
 
-    public void setTemperatureDegrees(TemperatureDegrees temperatureDegrees) {
-        this.temperatureDegrees = temperatureDegrees;
-    }
 }

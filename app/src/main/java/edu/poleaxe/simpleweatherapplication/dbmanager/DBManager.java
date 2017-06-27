@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
+import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 import edu.poleaxe.simpleweatherapplication.weatherapi.City;
 import edu.poleaxe.simpleweatherapplication.weatherapi.ForecastInstance;
@@ -135,7 +136,7 @@ public class DBManager {
         listToReturn.add("create table PreviouslyBrowsedLocations(locationID text);");
         listToReturn.add("create table if not exists CityList(locationID text not null unique, locationname text not null, lat text, lon text, countrycode text);");
         listToReturn.add("drop table if exists cacheddata;");
-        listToReturn.add("create table cacheddata(locationID text not null, forecastperiod text, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
+        listToReturn.add("create table cacheddata(locationID text not null, forecastperiod text, unit text, updatetime text not null, forecastDateTime text, forecastPhenomena text," +
                 "forecastPrecipitation text, forecastHumidity text, forecastUVIndex text, forecastTemperature text," +
                 "forecastPressure text, forecastVisibility text);");
         return listToReturn;
@@ -415,13 +416,14 @@ public class DBManager {
         return lastCity;
     }
 
-    public long getLastUpdateTimeForCityForPeriod(ForecastPeriods forecastPeriods, City selectedCity){
+    public long getLastUpdateTimeForCityForPeriod(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements){
         long lastUpdateTime;
 
         String stringToExecute = "select updatetime " +
                 "from cacheddata " +
                 "where locationID = '" + selectedCity.getLocationID() + "' " +
                 "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "'" +
+                "and unit = '" + unitMeasurements.name().toLowerCase() + "'" +
                 "order by updatetime desc";
         Cursor resultSet = settingsDataBase.rawQuery(stringToExecute,null);
         if (resultSet == null || resultSet.getCount() == 0) {
@@ -441,12 +443,12 @@ public class DBManager {
      * @param forecastPeriods enum ForecastPeriod
      * @param forecastInstanceListToCache list of instances to cache
      */
-    public void CacheWeatherForecast(City selectedCity, ForecastPeriods forecastPeriods, ArrayList<ForecastInstance> forecastInstanceListToCache){
+    public void CacheWeatherForecast(City selectedCity, ForecastPeriods forecastPeriods, ArrayList<ForecastInstance> forecastInstanceListToCache, UnitMeasurements unitMeasurements){
         if (forecastInstanceListToCache == null){ return;}
 
         for (ForecastInstance forecastInstance :
                 forecastInstanceListToCache) {
-            CacheOneForecastInstance(selectedCity, forecastInstance, forecastPeriods);
+            CacheOneForecastInstance(selectedCity, forecastInstance, forecastPeriods, unitMeasurements);
         }
     }
 
@@ -456,10 +458,11 @@ public class DBManager {
      * @param forecastInstance of type Forecast instance to be stored
      * @param forecastPeriods enum of forecast period to be stored
      */
-    private void CacheOneForecastInstance(City cityToStore, ForecastInstance forecastInstance, ForecastPeriods forecastPeriods){
+    private void CacheOneForecastInstance(City cityToStore, ForecastInstance forecastInstance, ForecastPeriods forecastPeriods, UnitMeasurements unitMeasurements){
         String stringToExecute = "insert " +
                 "into cacheddata(locationID" +
                 ", forecastperiod" +
+                ", unit" +
                 ", updatetime" +
                 ", forecastDateTime" +
                 ", forecastPhenomena" +
@@ -473,6 +476,7 @@ public class DBManager {
                 "values (" +
                 "'" + cityToStore.getLocationID() + "'" +
                 ",'" + forecastPeriods.name().toLowerCase() + "'" +
+                ",'" + unitMeasurements.name().toLowerCase() + "'" +
                 ",'" + String.valueOf(System.currentTimeMillis()) + "'" +
                 ",'" + forecastInstance.getForecastDateTime() + "'" +
                 ",'" + forecastInstance.getForecastPhenomena() + "'" +
@@ -493,11 +497,12 @@ public class DBManager {
      * @param forecastPeriods enum of period to be cleaned
      * @param cityToClean of type City to be cleaned
      */
-    public void CleanUpCityCache(ForecastPeriods forecastPeriods,City cityToClean){
+    public void CleanUpCityCache(ForecastPeriods forecastPeriods,City cityToClean, UnitMeasurements unitMeasurements){
         String stringToExecute = "delete " +
                 "from cacheddata " +
                 "where locationID = '" + cityToClean.getLocationID() + "' " +
-                "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' ";
+                "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' " +
+                "and unit = '" + unitMeasurements.name().toLowerCase() + "' ";
         settingsDataBase.execSQL(stringToExecute);
     }
 
@@ -507,7 +512,7 @@ public class DBManager {
      * @param forecastPeriods enum of available forecast periods
      * @return Array list of forecast instances to be displayed
      */
-    public ArrayList<ForecastInstance> getCachedForecast(City selectedCity, ForecastPeriods forecastPeriods){
+    public ArrayList<ForecastInstance> getCachedForecast(City selectedCity, ForecastPeriods forecastPeriods, UnitMeasurements unitMeasurements){
         ArrayList<ForecastInstance> forecastInstanceListToReturn = new ArrayList<>();
         String stringToExecute = "select " +
                 " forecastDateTime" +
@@ -521,6 +526,7 @@ public class DBManager {
                 "from cacheddata " +
                 "where locationID = '" + selectedCity.getLocationID() + "' " +
                 "and forecastperiod = '" + forecastPeriods.name().toLowerCase() + "' " +
+                "and unit = '" + unitMeasurements.name().toLowerCase() + "' " +
                 "order by forecastDateTime asc";
         Cursor resultSet = settingsDataBase.rawQuery(stringToExecute, null);
         if (resultSet == null) {

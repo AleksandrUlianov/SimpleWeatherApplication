@@ -32,7 +32,6 @@ import java.util.Map;
  */
 public class WeatherCheckActivity extends AppCompatActivity {
 
-    //TODO retrieve weather according to the selected temperature set and metric system
     //TODO check exception about permissions on the first start
     private DialogManager dialogManager = new DialogManager();
     private DBManager dbManager;
@@ -86,24 +85,45 @@ public class WeatherCheckActivity extends AppCompatActivity {
         ListView forecastListView = (ListView) findViewById(R.id.lvForecastList);
         forecastListView.setAdapter(weatherEntryAdapter);
 
-        SwitchCompat temperatureSwitch = (SwitchCompat) findViewById(R.id.switchTUnits);
+        final SwitchCompat temperatureSwitch = (SwitchCompat) findViewById(R.id.switchTUnits);
         SwitchCompat measurementSwitch = (SwitchCompat) findViewById(R.id.switchMUnits);
 
         temperatureSwitch.setChecked(false);
         measurementSwitch.setChecked(false);
 
-        temperatureSwitch.setOnClickListener(new View.OnClickListener() {
+//        temperatureSwitch.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//
+//                Map<String, String> settingToUpdate = new HashMap<>();
+//
+//                if (v.isSelected()){
+//                    temperatureDegrees = TemperatureDegrees.CELSIUS;
+//                }
+//                else {
+//                    temperatureDegrees = TemperatureDegrees.FARENHEIT;
+//                }
+//                settingToUpdate.put("degreesType",temperatureDegrees.name());
+//                dbManager.updateAnySettings(settingToUpdate);
+//            }
+//        });
+
+        measurementSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View v) {
-
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 Map<String, String> settingToUpdate = new HashMap<>();
-
-                if (v.isSelected()){
+                if (!isChecked){
+                    unitMeasurements = UnitMeasurements.METRIC;
                     temperatureDegrees = TemperatureDegrees.CELSIUS;
+                    temperatureSwitch.setChecked(false);
+
                 }
                 else {
+                    unitMeasurements = UnitMeasurements.IMPERIAL;
                     temperatureDegrees = TemperatureDegrees.FARENHEIT;
+                    temperatureSwitch.setChecked(true);
                 }
+                settingToUpdate.put("unitsType",unitMeasurements.name());
                 settingToUpdate.put("degreesType",temperatureDegrees.name());
                 dbManager.updateAnySettings(settingToUpdate);
             }
@@ -112,16 +132,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
         measurementSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Map<String, String> settingToUpdate = new HashMap<>();
-                if (v.isSelected()){
-                    unitMeasurements = UnitMeasurements.IMPERIAL;
 
-                }
-                else {
-                    unitMeasurements = UnitMeasurements.METRIC;
-                }
-                settingToUpdate.put("unitsType",unitMeasurements.name());
-                dbManager.updateAnySettings(settingToUpdate);
             }
         });
 
@@ -250,7 +261,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
         }
 
         ForecastProcessor forecastProcessor = new ForecastProcessor(this);
-        forecastProcessor.GetWeatherForecastForSelectedCity(forecastPeriod, selectedCity, unitMeasurements, temperatureDegrees);
+        forecastProcessor.GetWeatherForecastForSelectedCity(forecastPeriod, selectedCity, unitMeasurements);
     }
 
     /**

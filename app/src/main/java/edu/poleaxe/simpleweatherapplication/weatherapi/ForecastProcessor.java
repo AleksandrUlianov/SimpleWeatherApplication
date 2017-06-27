@@ -31,16 +31,16 @@ public class ForecastProcessor implements CallBackInstance {
      * @param selectedCity
      * @return
      */
-    public void GetWeatherForecastForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements, TemperatureDegrees temperatureDegrees){
+    public void GetWeatherForecastForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements){
         //+used
 
-        long lastUpdateTime = dbManager.getLastUpdateTimeForCityForPeriod(forecastPeriods, selectedCity);
+        long lastUpdateTime = dbManager.getLastUpdateTimeForCityForPeriod(forecastPeriods, selectedCity, unitMeasurements);
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime > (1800000)){
-            updateCache(forecastPeriods,selectedCity, unitMeasurements, temperatureDegrees);
+            updateCache(forecastPeriods,selectedCity, unitMeasurements);
         }
         else{
-            parentActivity.UpdateWeather(dbManager.getCachedForecast(selectedCity,forecastPeriods));
+            parentActivity.UpdateWeather(dbManager.getCachedForecast(selectedCity,forecastPeriods, unitMeasurements));
         }
 
        // UpdateWeaterOnUIForSelectedCity(forecastPeriods, selectedCity);
@@ -51,16 +51,15 @@ public class ForecastProcessor implements CallBackInstance {
      * @param forecastPeriods
      * @param selectedCity
      */
-    private void updateCache(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements, TemperatureDegrees temperatureDegrees) {
+    private void updateCache(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements) {
 
 
-        dbManager.CleanUpCityCache(forecastPeriods, selectedCity);
+        dbManager.CleanUpCityCache(forecastPeriods, selectedCity, unitMeasurements);
 
         OpenWeatherMapAPI apiServis = new OpenWeatherMapAPI();
         apiServis.setContext(parentActivity);
         apiServis.setCityToCheck(selectedCity);
         apiServis.setPeriodToCheck(forecastPeriods);
-        apiServis.setTemperatureDegrees(temperatureDegrees);
         apiServis.setUnitMeasurements(unitMeasurements);
         apiServis.setCallBackClass(this);
         apiServis.execute();
@@ -73,14 +72,14 @@ public class ForecastProcessor implements CallBackInstance {
      * @param selectedCity
      */
     @Override
-    public void UpdateWeaterOnUIForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity){
+    public void UpdateWeaterOnUIForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements){
         String fileDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/testApplication/";
         String fullFileName = "testweather_" + selectedCity.getLocationID() + ".xml";
 
         ArrayList<ForecastInstance> weatherDataFromXML = new XMLParser(parentActivity).RetrieveWeatherCached(forecastPeriods,selectedCity);
-        dbManager.CacheWeatherForecast(selectedCity, forecastPeriods, weatherDataFromXML);
+        dbManager.CacheWeatherForecast(selectedCity, forecastPeriods, weatherDataFromXML, unitMeasurements);
         new FileManager().RemoveTMPFile(fileDir, fullFileName);
 
-        parentActivity.UpdateWeather(dbManager.getCachedForecast(selectedCity,forecastPeriods));
+        parentActivity.UpdateWeather(dbManager.getCachedForecast(selectedCity,forecastPeriods, unitMeasurements));
     }
 }
