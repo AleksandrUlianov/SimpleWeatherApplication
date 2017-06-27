@@ -32,6 +32,8 @@ import java.util.Map;
  */
 public class WeatherCheckActivity extends AppCompatActivity {
 
+    //TODO retrieve weather according to the selected temperature set and metric system
+    //TODO check exception about permissions on the first start
     private DialogManager dialogManager = new DialogManager();
     private DBManager dbManager;
 
@@ -248,7 +250,7 @@ public class WeatherCheckActivity extends AppCompatActivity {
         }
 
         ForecastProcessor forecastProcessor = new ForecastProcessor(this);
-        forecastProcessor.GetWeatherForecastForSelectedCity(forecastPeriod, selectedCity);
+        forecastProcessor.GetWeatherForecastForSelectedCity(forecastPeriod, selectedCity, unitMeasurements, temperatureDegrees);
     }
 
     /**

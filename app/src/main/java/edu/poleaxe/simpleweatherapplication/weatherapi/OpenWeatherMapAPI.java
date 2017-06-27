@@ -6,6 +6,8 @@ import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.R;
 import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
+import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
+import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.dbmanager.FileManager;
 import edu.poleaxe.simpleweatherapplication.support.LogManager;
 
@@ -21,6 +23,8 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
     private CallBackInstance callBackClass;
     private City cityToCheck;
     private ForecastPeriods forecastPeriodToCheck;
+    private UnitMeasurements unitMeasurements;
+    private TemperatureDegrees temperatureDegrees;
 
     /**
      *
@@ -89,15 +93,14 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
 
     /**
      *
-     * @param forecastPeriods
      * @param cityID
      * @return
      */
-    private String CreateAPIRequest(ForecastPeriods forecastPeriods, String cityID){
+    private String CreateAPIRequest(String cityID){
 
         String apiRequest;
 
-        switch (forecastPeriods){
+        switch (forecastPeriodToCheck){
             case DAYS5:
                 apiRequest = parentActivity.getResources().getString(R.string.weatherForecastAPI);
                 break;
@@ -105,24 +108,26 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
                 apiRequest = parentActivity.getResources().getString(R.string.weatherNowAPI);
         }
 
-        apiRequest = apiRequest + "id=" + cityID + "&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
-        //apiRequest = apiRequest + "id=498677&type=accurate&mode=xml" + "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
+        apiRequest = apiRequest + "id=" + cityID +
+                "&type=accurate&mode=xml" +
+                "&units=" + unitMeasurements.name().toLowerCase() +
+
+                "&APPID=" + parentActivity.getResources().getString(R.string.APIkey);
 
         return apiRequest;
     }
 
     /**
      *
-     * @param forecastPeriods
      * @throws IOException
      */
-    private void RequestWeatherUpdate(ForecastPeriods forecastPeriods) throws IOException {
+    private void RequestWeatherUpdate() throws IOException {
         String stringURLToConnect;
         if (cityToCheck == null){
             return;
         }
 
-        stringURLToConnect = CreateAPIRequest(forecastPeriods, cityToCheck.getLocationID());
+        stringURLToConnect = CreateAPIRequest(cityToCheck.getLocationID());
 
         if (stringURLToConnect.trim().equals("")){
             new LogManager().captureLog(parentActivity.getApplicationContext(), "Empty connection. Nowhere to retrieve from");
@@ -158,7 +163,7 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
     @Override
     protected Void doInBackground(Void... voids) {
         try {
-            RequestWeatherUpdate(forecastPeriodToCheck);
+            RequestWeatherUpdate();
         } catch (IOException e) {
             new LogManager().captureLog(parentActivity.getApplicationContext(), e.getMessage());
         }
@@ -170,4 +175,11 @@ public class OpenWeatherMapAPI extends AsyncTask<Void, Void, Void>{
         callBackClass.UpdateWeaterOnUIForSelectedCity(forecastPeriodToCheck, cityToCheck);
     }
 
+    public void setUnitMeasurements(UnitMeasurements unitMeasurements) {
+        this.unitMeasurements = unitMeasurements;
+    }
+
+    public void setTemperatureDegrees(TemperatureDegrees temperatureDegrees) {
+        this.temperatureDegrees = temperatureDegrees;
+    }
 }

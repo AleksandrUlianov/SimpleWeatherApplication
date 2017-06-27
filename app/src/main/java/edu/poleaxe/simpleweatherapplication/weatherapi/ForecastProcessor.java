@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Environment;
 import edu.poleaxe.simpleweatherapplication.WeatherCheckActivity;
 import edu.poleaxe.simpleweatherapplication.customenums.ForecastPeriods;
+import edu.poleaxe.simpleweatherapplication.customenums.TemperatureDegrees;
+import edu.poleaxe.simpleweatherapplication.customenums.UnitMeasurements;
 import edu.poleaxe.simpleweatherapplication.dbmanager.DBManager;
 import edu.poleaxe.simpleweatherapplication.dbmanager.FileManager;
 
@@ -29,17 +31,19 @@ public class ForecastProcessor implements CallBackInstance {
      * @param selectedCity
      * @return
      */
-    public void GetWeatherForecastForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity){
+    public void GetWeatherForecastForSelectedCity(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements, TemperatureDegrees temperatureDegrees){
         //+used
 
         long lastUpdateTime = dbManager.getLastUpdateTimeForCityForPeriod(forecastPeriods, selectedCity);
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime > (1800000)){
-            updateCache(forecastPeriods,selectedCity);
+            updateCache(forecastPeriods,selectedCity, unitMeasurements, temperatureDegrees);
         }
         else{
             parentActivity.UpdateWeather(dbManager.getCachedForecast(selectedCity,forecastPeriods));
         }
+
+       // UpdateWeaterOnUIForSelectedCity(forecastPeriods, selectedCity);
     }
 
     /**
@@ -47,7 +51,7 @@ public class ForecastProcessor implements CallBackInstance {
      * @param forecastPeriods
      * @param selectedCity
      */
-    private void updateCache(ForecastPeriods forecastPeriods, City selectedCity) {
+    private void updateCache(ForecastPeriods forecastPeriods, City selectedCity, UnitMeasurements unitMeasurements, TemperatureDegrees temperatureDegrees) {
 
 
         dbManager.CleanUpCityCache(forecastPeriods, selectedCity);
@@ -56,10 +60,11 @@ public class ForecastProcessor implements CallBackInstance {
         apiServis.setContext(parentActivity);
         apiServis.setCityToCheck(selectedCity);
         apiServis.setPeriodToCheck(forecastPeriods);
+        apiServis.setTemperatureDegrees(temperatureDegrees);
+        apiServis.setUnitMeasurements(unitMeasurements);
         apiServis.setCallBackClass(this);
         apiServis.execute();
 
-        //UpdateWeaterOnUIForSelectedCity(forecastPeriods, selectedCity);
     }
 
     /**
